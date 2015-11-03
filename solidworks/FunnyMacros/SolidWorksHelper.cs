@@ -17,11 +17,12 @@ namespace FunnyMacros
         private int qw;
 
         //paths to components
-        private const string HOME_PATH              = @"d:\!current-tasks\course-projects";
-        private const string ASSEMBLY_NAME          = "assembly.sldasm";
-        private const string SHAFT_NAME             = "shaft.sldprt";
-        private const string PLACE_LOCATOR_NAME     = "plane-locator.sldprt";
-        private const string CYLINDER_LOCATOR_NAME  = "cylinder-locator.sldprt";
+        private const string HOME_PATH = @"d:\!current-tasks\course-projects";
+        private const string ASSEMBLY_NAME = "assembly.sldasm";
+        private const string CORPUS_NAME = "corpus.sldprt";
+        private const string SHAFT_NAME = "shaft.sldprt";
+        private const string PLACE_LOCATOR_NAME = "plane-locator.sldprt";
+        private const string CYLINDER_LOCATOR_NAME = "cylinder-locator.sldprt";
 
         //solidworks application instance
         public ISldWorks solidWorks;
@@ -29,6 +30,9 @@ namespace FunnyMacros
         //the assembly of details
         private IModelDoc2 document;
         private IAssemblyDoc assembly;
+
+        //the corpus - the base for the design
+        private Locator corpus = new Locator();
 
         //the detail for positionign
         private Locator shaft = new Locator();
@@ -51,18 +55,21 @@ namespace FunnyMacros
 
         public void Initalize()
         {
-            planeLocator.Model          = LoadComponent(Path.Combine(HOME_PATH, PLACE_LOCATOR_NAME));
-            firstCylinderLocator.Model  = LoadComponent(Path.Combine(HOME_PATH, CYLINDER_LOCATOR_NAME));
-            secondCylinderLocator.Model = LoadComponent(Path.Combine(HOME_PATH, CYLINDER_LOCATOR_NAME));
-            shaft.Model                 = LoadComponent(Path.Combine(HOME_PATH, SHAFT_NAME));
 
             document = LoadAssembly(solidWorks, Path.Combine(HOME_PATH, ASSEMBLY_NAME));
             assembly = document as IAssemblyDoc;
 
-            planeLocator.Component          = AddModelToAssembly(assembly, planeLocator.Model.GetPathName(), 250.0 / 1000, 0.0, 0.0);
-            firstCylinderLocator.Component  = AddModelToAssembly(assembly, firstCylinderLocator.Model.GetPathName(), 0.0, 0.0, 100.0 / 1000);
+            corpus.Model = LoadModel(Path.Combine(HOME_PATH, CORPUS_NAME));
+            planeLocator.Model = LoadModel(Path.Combine(HOME_PATH, PLACE_LOCATOR_NAME));
+            firstCylinderLocator.Model = LoadModel(Path.Combine(HOME_PATH, CYLINDER_LOCATOR_NAME));
+            secondCylinderLocator.Model = LoadModel(Path.Combine(HOME_PATH, CYLINDER_LOCATOR_NAME));
+            shaft.Model = LoadModel(Path.Combine(HOME_PATH, SHAFT_NAME));
+
+            corpus.Component = AddModelToAssembly(assembly, corpus.Model.GetPathName(), 0.0, -50.0 / 1000, 0.0);
+            planeLocator.Component = AddModelToAssembly(assembly, planeLocator.Model.GetPathName(), 250.0 / 1000, 0.0, 0.0);
+            firstCylinderLocator.Component = AddModelToAssembly(assembly, firstCylinderLocator.Model.GetPathName(), 0.0, 0.0, 100.0 / 1000);
             secondCylinderLocator.Component = AddModelToAssembly(assembly, secondCylinderLocator.Model.GetPathName(), 0.0, 0.0, -100.0 / 1000);
-            shaft.Component                 = AddModelToAssembly(assembly, shaft.Model.GetPathName(), 0.0, 0.0, 0.0);
+            shaft.Component = AddModelToAssembly(assembly, shaft.Model.GetPathName(), 0.0, 0.0, 0.0);
 
             //fix shaft
             shaft.Component.Select(true);
@@ -70,20 +77,21 @@ namespace FunnyMacros
             document.ClearSelection2(true);
 
             //unfix locator 
-            planeLocator.Component.Select(true);
-            firstCylinderLocator.Component.Select(true);
-            secondCylinderLocator.Component.Select(true);
-            assembly.UnfixComponent();       
+            corpus.Component.Select4(true, null, false);
+            planeLocator.Component.Select4(true, null, false);
+            firstCylinderLocator.Component.Select4(true, null, false);
+            secondCylinderLocator.Component.Select4(true, null, false);
+            assembly.UnfixComponent();
             document.ClearSelection2(true);
         }
 
         public IModelDoc2 LoadAssembly(ISldWorks application, string path)
         {
             //2 = (int)swDocTemplateTypes_e.swDocTemplateTypePART
-            IModelDoc2 model = application.OpenDoc6(path,  2, 0, string.Empty, ref qe, ref qw);
+            IModelDoc2 model = application.OpenDoc6(path, 2, 0, string.Empty, ref qe, ref qw);
             Debug.WriteLine("assemly loaded. errors: {2}, warnings: {3}, pathName: {0}, title: {1} ... ok", model.GetPathName(), model.GetTitle(), qe, qw);
 
-            application.ActivateDoc2(model.GetTitle(), false,  ref qe);
+            application.ActivateDoc2(model.GetTitle(), false, ref qe);
             Debug.WriteLine("activate doc. errors: {0} ... ok", qe, string.Empty);
 
             model = application.ActiveDoc as IModelDoc2;
@@ -92,7 +100,7 @@ namespace FunnyMacros
             return model;
         }
 
-        public IModelDoc2 LoadComponent(string path)
+        public IModelDoc2 LoadModel(string path)
         {
             //1  = (int)swDocTemplateTypes_e.swDocTemplateTypeNONE
             //16 = (int)swOpenDocOptions_e.swOpenDocOptions_LoadModel
@@ -104,27 +112,27 @@ namespace FunnyMacros
 
         public IComponent2 AddModelToAssembly(IAssemblyDoc assembly, string componentName, double x, double y, double z)
         {
-            //0 = (int)swAddComponentConfigOptions_e.swAddComponentConfigOptions_CurrentSelectedConfig
-            IComponent2 component = assembly.AddComponent5(componentName, 0, string.Empty, false, string.Empty, x, y, z);
+            int a = (int)swAddComponentConfigOptions_e.swAddComponentConfigOptions_CurrentSelectedConfig;
+            IComponent2 component = assembly.AddComponent5(componentName, a, string.Empty, false, string.Empty, x, y, z);
             Debug.WriteLine("model {0} added to assembly ... ok", componentName, string.Empty);
 
             return component;
-        }   
+        }
 
         public void AddMate()
         {
             //mate for plane base
             IFeature feature = planeLocator.Component.FeatureByName("mouting-plane");
             AddMate(feature, planeBase, (int)swMateType_e.swMateCOINCIDENT);
-            
+
             double[] planeBaseCenter = GetCenterOf(planeBase.GetBox() as double[]);
             Debug.WriteLine("center of plane base: {0}", string.Join(" | ", planeBaseCenter), string.Empty);
 
             double[] mountPlaneCenter = GetCenterOf(feature);
             Debug.WriteLine("center of mount plane: {0}", string.Join(" | ", planeBaseCenter), string.Empty);
-             
+
             Translate(planeLocator.Component, planeBaseCenter[0] - mountPlaneCenter[0], planeBaseCenter[1] - mountPlaneCenter[1], planeBaseCenter[2] - mountPlaneCenter[2]);
-            
+
             IFeature firstFeature = null;
             IFeature secondFeature = null;
 
@@ -135,7 +143,7 @@ namespace FunnyMacros
             AddMate(firstFeature, firstCylinderBase, (int)swMateType_e.swMateTANGENT);
             AddMate(secondFeature, firstCylinderBase, (int)swMateType_e.swMateTANGENT);
 
-            Translate(firstCylinderLocator.Component, -0.2, -0.2, -0.2);
+            Translate(firstCylinderLocator.Component, -0.3, -0.3, -0.3);
 
             Debug.WriteLine("mate with second cylinder base...");
             firstFeature = secondCylinderLocator.Component.FeatureByName("mount-plane-1");
@@ -159,6 +167,14 @@ namespace FunnyMacros
             document.ClearSelection2(true);
         }
 
+        public void AddMate(IFace2 end, IFace2 locatorFace, int mateType)
+        {
+            (end as IEntity).Select4(true, null);
+            (locatorFace as IEntity).Select4(true, null);
+            assembly.AddMate3(mateType, (int)swMateAlign_e.swAlignSAME, false, 0, 0, 0, 0, 0, 0, 0, 0, false, out qe);
+            document.ClearSelection2(true);
+        }
+
         public void AlignWithHorizong(IComponent2 component1, IComponent2 component2)
         {
             document.ClearSelection2(true);
@@ -170,9 +186,10 @@ namespace FunnyMacros
 
             face1.Select2(true, (int)swSelectionMarkAction_e.swSelectionMarkAppend);
             face2.Select2(true, (int)swSelectionMarkAction_e.swSelectionMarkAppend);
-            //3 = (int)swMateType_e.swMatePARALLEL
-            //0 = (int)swMateAlign_e.swMateAlignALIGNED
-            assembly.AddMate3(3, 0, false, 0, 0, 0, 0, 0, 0, 0, 0, false, out qe);
+
+            int a = (int)swMateType_e.swMatePARALLEL;
+            int b = (int)swMateAlign_e.swMateAlignALIGNED;
+            assembly.AddMate3(a, b, false, 0, 0, 0, 0, 0, 0, 0, 0, false, out qe);
             document.ClearSelection2(true);
         }
 
@@ -183,23 +200,81 @@ namespace FunnyMacros
             AlignWithHorizong(firstCylinderLocator.Component, shaft.Component);
             AlignWithHorizong(secondCylinderLocator.Component, shaft.Component);
 
-            double[] firstBox = firstCylinderBase.GetBox() as double[];
+            Debug.WriteLine("iterate faces");
 
-            double w = Math.Abs(firstBox[0] - firstBox[3]);
-            double h = Math.Abs(firstBox[1] - firstBox[4]);
-            double l = Math.Abs(firstBox[2] - firstBox[5]);
+            IBody2 shaftBody = shaft.Component.GetBody();
+            object[] faces = shaftBody.GetFaces();
+            IFace2 firstEnd = null;
+            IFace2 secondEnd = null;
+            double minDistance = double.MinValue;
+            double maxDistance = double.MaxValue;
 
-            Debug.WriteLine(firstBox.Length);
-            for (int i = 0; i < 3; ++i)
-            {
-                Debug.WriteLine("from: {0}, to: {1}", firstBox[i], firstBox[i + 3]);
+            foreach (object o in faces)
+            {                
+                Face2 face = o as Face2;
+                Debug.WriteLine("faceId: {0}, featureId: {1}", face.GetFaceId(), face.GetFeatureId());
+                Surface surface = face.GetSurface();
+                if (surface.IsPlane())
+                {
+                    double[] p = surface.PlaneParams;
+                    double distance = Math.Sqrt(Math.Pow(p[0] * p[3], 2) + Math.Pow(p[1] * p[4], 2) + Math.Pow(p[2] * p[5], 2));
+                    if (distance < maxDistance)
+                    {
+                        maxDistance = distance;
+                        firstEnd = face;
+                    }
+                    else
+                    {
+                        minDistance = distance;
+                        secondEnd = face;
+                    }
+
+                    //Debug.WriteLine(string.Join(" | ", p));
+                    //Thread.Sleep(2000);
+                }
             }
+
+            (firstEnd as IEntity).Select4(true, null);
+            (secondEnd as IEntity).Select4(true, null);
+
+            IFace2 firstNearestFace = FindRemoteFaceOfCylinderLocator(firstCylinderLocator, firstEnd);
+            //AddMate(firstEnd, firstNearestFace, (int)swMateType_e.swMateCOINCIDENT);            
+            (firstNearestFace as IEntity).Select4(true, null);
+        }
+
+        public IFace2 FindRemoteFaceOfCylinderLocator(Locator locator, IFace2 originFace)
+        {
+            Debug.WriteLine("FindRemoteFaceOfCylinderLocator");
+            double[] p = (originFace.GetSurface() as ISurface).PlaneParams;
+            Debug.WriteLine("origin     " + string.Join(" | ", p));
+            IBody2 body = locator.Component.GetBody();
+            object[] faces = body.GetFaces();
+            IFace2 f = null;
+            
+            foreach (object o in faces)
+            {
+                IFace2 face = o as IFace2;
+                (face as IEntity).Select4(true, null);
+                ISurface surface = face.GetSurface();
+                if (surface.IsPlane())
+                {
+                    double[] q = surface.PlaneParams;
+                    Debug.WriteLine(string.Join(" | ", q));
+                    if (p[0] == q[0] && p[1] == q[1] && p[2] == q[2])
+                    {
+                        f = face;
+                    }
+                    Thread.Sleep(1000);
+                }
+            }
+
+            return f;
         }
 
         public void Translate(IComponent2 component, double dx, double dy, double dz)
         {
-            IMathUtility mathUtil = solidWorks.GetMathUtility() as IMathUtility;
-            IMathTransform transform = mathUtil.CreateTransform(null) as IMathTransform;
+            IMathUtility mathUtil = solidWorks.GetMathUtility();
+            IMathTransform transform = mathUtil.CreateTransform(null);
             double[] matrix = transform.ArrayData as double[];
             matrix[9] = dx;
             matrix[10] = dy;

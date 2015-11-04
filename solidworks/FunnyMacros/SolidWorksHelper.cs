@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Drawing;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace FunnyMacros
 {
@@ -47,6 +48,8 @@ namespace FunnyMacros
         private Locator firstCylinderLocator = new Locator();
         private Locator secondCylinderLocator = new Locator();
 
+        private SolitUtil solidUtil;
+
         public void Open()
         {
             solidWorks = System.Activator.CreateInstance(System.Type.GetTypeFromProgID("SldWorks.Application")) as ISldWorks;
@@ -55,7 +58,6 @@ namespace FunnyMacros
 
         public void Initalize()
         {
-
             document = LoadAssembly(solidWorks, Path.Combine(HOME_PATH, ASSEMBLY_NAME));
             assembly = document as IAssemblyDoc;
 
@@ -83,6 +85,8 @@ namespace FunnyMacros
             secondCylinderLocator.Component.Select4(true, null, false);
             assembly.UnfixComponent();
             document.ClearSelection2(true);
+
+            solidUtil = new SolitUtil(solidWorks.GetMathUtility());
         }
 
         public IModelDoc2 LoadAssembly(ISldWorks application, string path)
@@ -102,9 +106,9 @@ namespace FunnyMacros
 
         public IModelDoc2 LoadModel(string path)
         {
-            //1  = (int)swDocTemplateTypes_e.swDocTemplateTypeNONE
-            //16 = (int)swOpenDocOptions_e.swOpenDocOptions_LoadModel
-            IModelDoc2 model = solidWorks.OpenDoc6(path, 1, 16, string.Empty, ref qe, ref qw);
+            int a = (int)swDocTemplateTypes_e.swDocTemplateTypeNONE;
+            int b = (int)swOpenDocOptions_e.swOpenDocOptions_LoadModel;
+            IModelDoc2 model = solidWorks.OpenDoc6(path, a, b, string.Empty, ref qe, ref qw);
             Debug.WriteLine("model {0} loaded in mememory, full path {1} ... ok", model.GetTitle(), model.GetPathName());
 
             return model;
@@ -200,52 +204,56 @@ namespace FunnyMacros
             AlignWithHorizong(firstCylinderLocator.Component, shaft.Component);
             AlignWithHorizong(secondCylinderLocator.Component, shaft.Component);
 
-            Debug.WriteLine("iterate faces");
+            IBody2 body = null;
+            object[] faceObjects = null;
+            IFace2[] faces = null;
 
-            IBody2 shaftBody = shaft.Component.GetBody();
-            object[] faces = shaftBody.GetFaces();
-            IFace2 firstEnd = null;
-            IFace2 secondEnd = null;
-            double minDistance = double.MinValue;
-            double maxDistance = double.MaxValue;
+            Debug.WriteLine("find ends of shaft...");
+            body = shaft.Component.GetBody();
+            faceObjects = body.GetFaces();
+            faces = Array.ConvertAll(faceObjects, new Converter<object, IFace2>((o) => { return o as IFace2; }));
+            RemovalPairlFaces removalPair = solidUtil.FindMaximumRemovalPlanes(faces);
 
-            foreach (object o in faces)
-            {                
-                Face2 face = o as Face2;
-                Debug.WriteLine("faceId: {0}, featureId: {1}", face.GetFaceId(), face.GetFeatureId());
-                Surface surface = face.GetSurface();
-                if (surface.IsPlane())
-                {
-                    double[] p = surface.PlaneParams;
-                    double distance = Math.Sqrt(Math.Pow(p[0] * p[3], 2) + Math.Pow(p[1] * p[4], 2) + Math.Pow(p[2] * p[5], 2));
-                    if (distance < maxDistance)
-                    {
-                        maxDistance = distance;
-                        firstEnd = face;
-                    }
-                    else
-                    {
-                        minDistance = distance;
-                        secondEnd = face;
-                    }
+            (removalPair.From as IEntity).Select4(true, null);
+            (removalPair.To as IEntity).Select4(true, null);
 
-                    //Debug.WriteLine(string.Join(" | ", p));
-                    //Thread.Sleep(2000);
-                }
-            }
 
-            (firstEnd as IEntity).Select4(true, null);
-            (secondEnd as IEntity).Select4(true, null);
+            //IFace2 removalFace;
+            //double distance;
 
-            IFace2 firstNearestFace = FindRemoteFaceOfCylinderLocator(firstCylinderLocator, firstEnd);
-            //AddMate(firstEnd, firstNearestFace, (int)swMateType_e.swMateCOINCIDENT);            
-            (firstNearestFace as IEntity).Select4(true, null);
+            //body = firstCylinderLocator.Component.GetBody();
+            //faceObjects = body.GetFaces();
+            //faces = Array.ConvertAll(faceObjects, new Converter<object, IFace2>((o) => { return o as IFace2; }));
+            //solidUtil.FindRemovalFace(faces, removalPair.From, out removalFace, out distance);
+
+            //double[] normal1 = removalPair.From.Normal;
+            //double[] normal2 = removalPair.To.Normal;
+            //Debug.WriteLine("normal1: " + string.Join(" | ", normal1));
+            //Debug.WriteLine("normal2: " + string.Join(" | ", normal2));
+
+            //IMathVector v1 = solidUtil.MathUtility.CreateVector(normal1);
+
+            //foreach (IFace2 face in faces)
+            //{
+            //    (face as Entity).Select4(true, null);
+            //    Surface s = face.GetSurface();
+            //    double[] ar = s.PlaneParams;
+            //    double[] normal = face.Normal;
+            //    Debug.WriteLine(string.Join(" | ", normal));
+            //    IMathVector v = solidUtil.MathUtility.CreateVector(normal);
+            //    IMathVector vnorm = v.Normalise();
+            //    Debug.WriteLine("params: " + string.Join(" | ", ar));
+            //    Debug.WriteLine("normalize vector: " + string.Join(" | ", (vnorm.ArrayData as double[])));
+            //    Debug.WriteLine("is parallel " + 
+            //        (solidUtil.IsCoDirectional(v, v1) || 
+            //         solidUtil.IsCoDirectional(solidUtil.Negative(v), v1)));
+            //}
         }
 
         public IFace2 FindRemoteFaceOfCylinderLocator(Locator locator, IFace2 originFace)
         {
             Debug.WriteLine("FindRemoteFaceOfCylinderLocator");
-            double[] p = (originFace.GetSurface() as ISurface).PlaneParams;
+            double[] p = originFace.Normal;
             Debug.WriteLine("origin     " + string.Join(" | ", p));
             IBody2 body = locator.Component.GetBody();
             object[] faces = body.GetFaces();
@@ -254,15 +262,15 @@ namespace FunnyMacros
             foreach (object o in faces)
             {
                 IFace2 face = o as IFace2;
-                (face as IEntity).Select4(true, null);
+                //(face as IEntity).Select4(true, null);
                 ISurface surface = face.GetSurface();
                 if (surface.IsPlane())
                 {
-                    double[] q = surface.PlaneParams;
+                    double[] q = face.Normal;
                     Debug.WriteLine(string.Join(" | ", q));
                     if (p[0] == q[0] && p[1] == q[1] && p[2] == q[2])
                     {
-                        f = face;
+                        return face;
                     }
                     Thread.Sleep(1000);
                 }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FunnyMacros
+namespace FunnyMacros.Model
 {
     class RemovalPairlFaces
     {

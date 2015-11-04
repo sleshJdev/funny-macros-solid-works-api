@@ -1,28 +1,51 @@
-﻿using SolidWorks.Interop.sldworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SolidWorks.Interop.sldworks;
+using FunnyMacros.Model;
 
-namespace FunnyMacros
+namespace FunnyMacros.Util
 {
-    class SolitUtil
+    class MiscUtil
     {
-        public IMathUtility MathUtility { get; set; }
-
-        public SolitUtil(IMathUtility mathUtility)
+        public static double[] GetCenterOf(IFeature feature)
         {
-            MathUtility = mathUtility;
+            object box = null;
+            feature.GetBox(ref box);
+
+            return GetCenterOf(box as double[]);
         }
 
-        public void FindRemovalFace(IFace2[] faces, IFace2 fromFace, out IFace2 removalFace, out double distance)
+        public static double[] GetCenterOf(double[] coordinatesCorner)
+        {
+            Debug.WriteLine("calculate center of coordinates: {0}", string.Join(" | ", coordinatesCorner), "");
+
+            double[] center = new double[3];
+            for (int i = 0; i < center.Length; ++i)
+            {
+                center[i] = (coordinatesCorner[i] + coordinatesCorner[i + 3]) / 2;
+            }
+
+            return center;
+        }
+
+        public static void Translate(IMathUtility mathUtility, IComponent2 component, double dx, double dy, double dz)
+        {
+            IMathTransform transform = mathUtility.CreateTransform(null);
+            double[] matrix = transform.ArrayData as double[];
+            matrix[9] = dx;
+            matrix[10] = dy;
+            matrix[11] = dz;
+            component.Transform2 = mathUtility.CreateTransform(matrix);
+        }
+
+        public static void FindRemovalFace(IMathUtility mathUtility, IFace2[] faces, IFace2 fromFace, out IFace2 removalFace, out double distance)
         {
             distance = 0.0;
             removalFace = null;
             ISurface fromSurface = fromFace.GetSurface();
-            IMathVector fromFaceNormal = MathUtility.CreateVector(fromFace.Normal);
+            IMathVector fromFaceNormal = mathUtility.CreateVector(fromFace.Normal);
 
             for (int i = 0; i < faces.Length; ++i)
             {
@@ -30,8 +53,8 @@ namespace FunnyMacros
                 ISurface toSurface = toFace.GetSurface();
                 if (toSurface.IsPlane())
                 {
-                    IMathVector toFaceNormal = MathUtility.CreateVector(toFace.Normal);
-                    if (IsCoDirectional(fromFaceNormal, toFaceNormal) || IsCoDirectional(fromFaceNormal, Negative(toFaceNormal)))
+                    IMathVector toFaceNormal = mathUtility.CreateVector(toFace.Normal);
+                    if (IsCoDirectional(fromFaceNormal, toFaceNormal) || IsCoDirectional(fromFaceNormal, Negative(mathUtility, toFaceNormal)))
                     {
                         double currentDistance = DistanceBetweenParallelPlanes(fromSurface, toSurface);
                         if (currentDistance > distance)
@@ -44,7 +67,7 @@ namespace FunnyMacros
             }
         }
 
-        public RemovalPairlFaces FindMaximumRemovalPlanes(IFace2[] faces)
+        public static RemovalPairlFaces FindMaximumRemovalPlanes(IMathUtility mathUtility, IFace2[] faces)
         {
             List<RemovalPairlFaces> list = new List<RemovalPairlFaces>();
             for (int i = 0; i < faces.Length; ++i)
@@ -55,7 +78,7 @@ namespace FunnyMacros
                 {                    
                     IFace2 toFace;
                     double distance;
-                    FindRemovalFace(faces, fromFace, out toFace, out distance);
+                    FindRemovalFace(mathUtility, faces, fromFace, out toFace, out distance);
 
                     if (toFace != null)
                     {
@@ -73,14 +96,13 @@ namespace FunnyMacros
             return list.OrderBy((x) => { return -x.Distance; }).First();
         }
 
-
         /// <summary>
         /// Calculate distance between parallel planes
         /// </summary>
         /// <param name="plane1"></param>
         /// <param name="plane2"></param>
         /// <returns></returns>
-        public double DistanceBetweenParallelPlanes(ISurface plane1, ISurface plane2)
+        public static double DistanceBetweenParallelPlanes(ISurface plane1, ISurface plane2)
         {
             double[] params1 = plane1.PlaneParams as double[];
             double[] parans2 = plane2.PlaneParams as double[];
@@ -100,7 +122,7 @@ namespace FunnyMacros
             return distance;
         }
 
-        public bool IsCoDirectional(IMathVector one, IMathVector two)
+        public static bool IsCoDirectional(IMathVector one, IMathVector two)
         {
             IMathVector oneN = one.Normalise();
             IMathVector twoN = two.Normalise();
@@ -116,21 +138,21 @@ namespace FunnyMacros
             return Equal(difference[0], 0, 1) && Equal(difference[1], 0, 1) && Equal(difference[2], 0, 1);
         }
 
-        public bool Equal(double d1, double d2, int toleranceDecimalPlaces)
+        public static bool Equal(double d1, double d2, int toleranceDecimalPlaces)
         {
             double tolerance = 1.0 / (Math.Pow(10, toleranceDecimalPlaces));
 
             return Math.Abs(d1 - d2) < tolerance;
         }
 
-        public IMathVector Negative(IMathVector origin)
+        public static IMathVector Negative(IMathUtility mathUtility, IMathVector origin)
         {
             double[] negativeVector = origin.ArrayData as double[];
             negativeVector[0] = -negativeVector[0];
             negativeVector[1] = -negativeVector[1];
             negativeVector[2] = -negativeVector[2];
 
-            return MathUtility.CreateVector(negativeVector);
+            return mathUtility.CreateVector(negativeVector);
         }
     }
 }

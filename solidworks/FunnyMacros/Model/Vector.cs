@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FunnyMacros
+namespace FunnyMacros.Model
 {
     class Vector
     {

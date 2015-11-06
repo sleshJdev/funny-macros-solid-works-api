@@ -32,6 +32,7 @@
             this.addMateButton = new System.Windows.Forms.Button();
             this.processSelectionButton = new System.Windows.Forms.Button();
             this.alignWithHorizontal = new System.Windows.Forms.Button();
+            this.alignWithShaftButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // runSwButton
@@ -63,18 +64,28 @@
             // 
             // alignWithHorizontal
             // 
-            this.alignWithHorizontal.Location = new System.Drawing.Point(12, 159);
+            this.alignWithHorizontal.Location = new System.Drawing.Point(12, 272);
             this.alignWithHorizontal.Name = "alignWithHorizontal";
             this.alignWithHorizontal.Size = new System.Drawing.Size(180, 43);
             this.alignWithHorizontal.TabIndex = 4;
             this.alignWithHorizontal.Text = "Align With Horizont";
             this.alignWithHorizontal.UseVisualStyleBackColor = true;
             // 
+            // alignWithShaftButton
+            // 
+            this.alignWithShaftButton.Location = new System.Drawing.Point(12, 223);
+            this.alignWithShaftButton.Name = "alignWithShaftButton";
+            this.alignWithShaftButton.Size = new System.Drawing.Size(180, 43);
+            this.alignWithShaftButton.TabIndex = 5;
+            this.alignWithShaftButton.Text = "Align With Shaft";
+            this.alignWithShaftButton.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(204, 261);
+            this.ClientSize = new System.Drawing.Size(229, 327);
+            this.Controls.Add(this.alignWithShaftButton);
             this.Controls.Add(this.alignWithHorizontal);
             this.Controls.Add(this.processSelectionButton);
             this.Controls.Add(this.addMateButton);
@@ -91,6 +102,7 @@
         private System.Windows.Forms.Button addMateButton;
         private System.Windows.Forms.Button processSelectionButton;
         private System.Windows.Forms.Button alignWithHorizontal;
+        private System.Windows.Forms.Button alignWithShaftButton;
     }
 }
 

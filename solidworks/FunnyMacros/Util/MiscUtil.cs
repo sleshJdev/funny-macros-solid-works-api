@@ -9,6 +9,27 @@ namespace FunnyMacros.Util
 {
     class MiscUtil
     {
+        public static double[] GetInGlobalCoordinatesSystem(IMathUtility mathUtility, IMathTransform transform, double[] vector)
+        {
+            IMathPoint point = null;
+            double[] coordinates = new double[3];
+            double[] result = new double[vector.Length];
+            for (int i = 0; i < vector.Length; i += 3)
+            {
+                coordinates[0] = vector[i + 0];
+                coordinates[1] = vector[i + 1];
+                coordinates[2] = vector[i + 2];
+                point = mathUtility.CreatePoint(coordinates);
+                point = point.MultiplyTransform(transform);
+                coordinates = point.ArrayData as double[];
+                result[i + 0] = coordinates[0];
+                result[i + 1] = coordinates[1];
+                result[i + 2] = coordinates[2];
+            }
+
+            return result;
+        }
+
         public static double[] GetCenterOf(IFeature feature)
         {
             object box = null;
@@ -19,24 +40,22 @@ namespace FunnyMacros.Util
 
         public static double[] GetCenterOf(double[] coordinatesCorner)
         {
-            Debug.WriteLine("calculate center of coordinates: {0}", string.Join(" | ", coordinatesCorner), "");
-
-            double[] center = new double[3];
-            for (int i = 0; i < center.Length; ++i)
+            Debug.WriteLine("calculate center of coordinates: {0}", string.Join(" | ", coordinatesCorner), string.Empty);
+            return new double[]
             {
-                center[i] = (coordinatesCorner[i] + coordinatesCorner[i + 3]) / 2;
-            }
-
-            return center;
+                (coordinatesCorner[0] + coordinatesCorner[3]) / 2,
+                (coordinatesCorner[1] + coordinatesCorner[4]) / 2,
+                (coordinatesCorner[2] + coordinatesCorner[5]) / 2
+            };
         }
 
-        public static void Translate(IMathUtility mathUtility, IComponent2 component, double dx, double dy, double dz)
+        public static void Translate(IMathUtility mathUtility, IComponent2 component, double x, double y, double z)
         {
             IMathTransform transform = mathUtility.CreateTransform(null);
             double[] matrix = transform.ArrayData as double[];
-            matrix[9] = dx;
-            matrix[10] = dy;
-            matrix[11] = dz;
+            matrix[9] = x;
+            matrix[10] = y;
+            matrix[11] = z;
             component.Transform2 = mathUtility.CreateTransform(matrix);
         }
 
@@ -78,7 +97,7 @@ namespace FunnyMacros.Util
                 {                    
                     IFace2 toFace;
                     double distance;
-                    FindRemovalFace(mathUtility, faces, fromFace, out toFace, out distance);
+                    FindRemovalFace(mathUtility, faces.Skip(i + 1).ToArray(), fromFace, out toFace, out distance);
 
                     if (toFace != null)
                     {

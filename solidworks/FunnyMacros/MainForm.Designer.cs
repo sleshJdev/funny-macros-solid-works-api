@@ -31,7 +31,7 @@
             this.runSwButton = new System.Windows.Forms.Button();
             this.addMateButton = new System.Windows.Forms.Button();
             this.processSelectionButton = new System.Windows.Forms.Button();
-            this.loadLocatorsButton = new System.Windows.Forms.Button();
+            this.alignWithHorizontal = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // runSwButton
@@ -61,21 +61,21 @@
             this.processSelectionButton.Text = "Process selection";
             this.processSelectionButton.UseVisualStyleBackColor = true;
             // 
-            // loadLocatorsButton
+            // alignWithHorizontal
             // 
-            this.loadLocatorsButton.Location = new System.Drawing.Point(12, 207);
-            this.loadLocatorsButton.Name = "loadLocatorsButton";
-            this.loadLocatorsButton.Size = new System.Drawing.Size(180, 42);
-            this.loadLocatorsButton.TabIndex = 4;
-            this.loadLocatorsButton.Text = "Load locators";
-            this.loadLocatorsButton.UseVisualStyleBackColor = true;
+            this.alignWithHorizontal.Location = new System.Drawing.Point(12, 159);
+            this.alignWithHorizontal.Name = "alignWithHorizontal";
+            this.alignWithHorizontal.Size = new System.Drawing.Size(180, 43);
+            this.alignWithHorizontal.TabIndex = 4;
+            this.alignWithHorizontal.Text = "Align With Horizont";
+            this.alignWithHorizontal.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(204, 261);
-            this.Controls.Add(this.loadLocatorsButton);
+            this.Controls.Add(this.alignWithHorizontal);
             this.Controls.Add(this.processSelectionButton);
             this.Controls.Add(this.addMateButton);
             this.Controls.Add(this.runSwButton);
@@ -90,7 +90,7 @@
         private System.Windows.Forms.Button runSwButton;
         private System.Windows.Forms.Button addMateButton;
         private System.Windows.Forms.Button processSelectionButton;
-        private System.Windows.Forms.Button loadLocatorsButton;
+        private System.Windows.Forms.Button alignWithHorizontal;
     }
 }
 

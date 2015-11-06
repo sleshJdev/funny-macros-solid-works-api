@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
+using System.Management;
+using System.Runtime.InteropServices;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using FunnyMacros.Model;
 
 namespace FunnyMacros.Util
 {
-    class SolidWorksHelper
+    public partial class SolidWorksMacro
     {
         //quantity of errors
         private int qe;
@@ -26,6 +27,7 @@ namespace FunnyMacros.Util
 
         //solidworks application instance
         public ISldWorks solidWorks;
+        public IMathUtility mathUtility;
 
         //the assembly of details
         private IModelDoc2 document;
@@ -38,9 +40,9 @@ namespace FunnyMacros.Util
         private Locator shaft = new Locator();
 
         //bases of that detail
-        private IFace2 planeBase;
-        private IFace2 firstCylinderBase;
-        private IFace2 secondCylinderBase;
+        private Base planeBase;
+        private Base firstCylinderBase;
+        private Base secondCylinderBase;
 
         //locator for bases
         private Locator planeLocator = new Locator();
@@ -66,7 +68,7 @@ namespace FunnyMacros.Util
             shaft.Model = LoadUtil.LoadModel(solidWorks, Path.Combine(HOME_PATH, SHAFT_NAME));
 
             //adding to assemply
-            corpus.Component = LoadUtil.AddModelToAssembly(assembly, corpus.Model.GetPathName(), 0.0, -50.0 / 1000, 0.0);
+            corpus.Component = LoadUtil.AddModelToAssembly(assembly, corpus.Model.GetPathName(), 0.0, -60.0 / 1000, 0.0);
             planeLocator.Component = LoadUtil.AddModelToAssembly(assembly, planeLocator.Model.GetPathName(), 250.0 / 1000, 0.0, 0.0);
             firstCylinderLocator.Component = LoadUtil.AddModelToAssembly(assembly, firstCylinderLocator.Model.GetPathName(), 0.0, 0.0, 100.0 / 1000);
             secondCylinderLocator.Component = LoadUtil.AddModelToAssembly(assembly, secondCylinderLocator.Model.GetPathName(), 0.0, 0.0, -100.0 / 1000);
@@ -85,15 +87,26 @@ namespace FunnyMacros.Util
             assembly.UnfixComponent();
             document.ClearSelection2(true);
 
-            //conjugation with the horizontal plane
-            AlignWithHorizong(corpus.Component);
-            AlignWithHorizong(shaft.Component);
-            AlignWithHorizong(planeLocator.Component);
-            AlignWithHorizong(firstCylinderLocator.Component);
-            AlignWithHorizong(secondCylinderLocator.Component);
+            mathUtility = solidWorks.IGetMathUtility();
         }
 
-        public void AlignWithHorizong(IComponent2 component)
+        public void Commit()
+        {
+            document.EditRebuild3();
+            //document.Rebuild((int)swRebuildOptions_e.swRebuildAll);//to apply translate
+        }
+
+        public void AlignWithHorizontAll()
+        {
+            //conjugation with the horizontal plane
+            AlignWithHorizont(corpus.Component);
+            AlignWithHorizont(shaft.Component);
+            AlignWithHorizont(planeLocator.Component);
+            AlignWithHorizont(firstCylinderLocator.Component);
+            AlignWithHorizont(secondCylinderLocator.Component);
+        }
+
+        public void AlignWithHorizont(IComponent2 component)
         {
             document.ClearSelection2(true);
             IFeature face = component.FeatureByName("Сверху");
@@ -106,7 +119,7 @@ namespace FunnyMacros.Util
             horizont.Select2(true, (int)swSelectionMarkAction_e.swSelectionMarkAppend);
 
             int a = (int)swMateType_e.swMatePARALLEL;
-            int b = (int)swMateAlign_e.swMateAlignALIGNED;
+            int b = (int)swMateAlign_e.swAlignNONE;
             assembly.AddMate3(a, b, false, 0, 0, 0, 0, 0, 0, 0, 0, false, out qe);
             document.ClearSelection2(true);
         }
@@ -115,30 +128,31 @@ namespace FunnyMacros.Util
         {
             //mate for plane base
             IFeature feature = planeLocator.Component.FeatureByName("mouting-plane");
-            AddMate(feature, planeBase, (int)swMateType_e.swMateCOINCIDENT);
+            AddMate(feature, planeBase.Face, (int)swMateType_e.swMateCOINCIDENT);
 
-            double[] planeBaseCenter = MiscUtil.GetCenterOf(planeBase.GetBox() as double[]);
+            double[] planeBaseCenter = MiscUtil.GetCenterOf(planeBase.Face.GetBox() as double[]);
             Debug.WriteLine("center of plane base: {0}", string.Join(" | ", planeBaseCenter), string.Empty);
 
             double[] mountPlaneCenter = MiscUtil.GetCenterOf(feature);
             Debug.WriteLine("center of mount plane: {0}", string.Join(" | ", planeBaseCenter), string.Empty);
 
-            MiscUtil.Translate(solidWorks.IGetMathUtility(), planeLocator.Component, 
-                planeBaseCenter[0] - mountPlaneCenter[0]/*dx*/, 
+            MiscUtil.Translate(mathUtility, planeLocator.Component,
+                planeBaseCenter[0] - mountPlaneCenter[0]/*dx*/,
                 planeBaseCenter[1] - mountPlaneCenter[1]/*dy*/,
                 planeBaseCenter[2] - mountPlaneCenter[2]/*dz*/);
 
             Debug.WriteLine("mate with cylinder bases...");
-            AddMateOfCylinderLocators(firstCylinderLocator.Component, firstCylinderBase);
-            AddMateOfCylinderLocators(secondCylinderLocator.Component, secondCylinderBase);
+            AddMateOfCylinderLocators(firstCylinderLocator.Component, firstCylinderBase.Face);
+            AddMateOfCylinderLocators(secondCylinderLocator.Component, secondCylinderBase.Face);
 
-            MiscUtil.Translate(solidWorks.IGetMathUtility(), secondCylinderLocator.Component, 0.5, 0.5, 0.5);
-            MiscUtil.Translate(solidWorks.IGetMathUtility(), firstCylinderLocator.Component, -0.3, -0.3, -0.3);
+            MiscUtil.Translate(mathUtility, firstCylinderLocator.Component, -0.3, -0.3, -0.3);
+            MiscUtil.Translate(mathUtility, secondCylinderLocator.Component, 0.5, 0.5, 0.5);
 
-            document.EditRebuild3();//to apply translate
-
+            Commit();
             Debug.WriteLine("added mate ... ok");
+
             AlignWithShaft();
+            Debug.WriteLine("align with shaft ... ok");
         }
 
         public void AddMateOfCylinderLocators(IComponent2 cylinderLocator, IFace2 cylinderBase)
@@ -161,81 +175,63 @@ namespace FunnyMacros.Util
 
         public void AlignWithShaft()
         {
-            IBody2 body = null;
-            object[] faceObjects = null;
-            IFace2[] faces = null;
-
             Debug.WriteLine("find ends of shaft...");
-            body = shaft.Component.GetBody();
-            faceObjects = body.GetFaces();
-            faces = Array.ConvertAll(faceObjects, new Converter<object, IFace2>((o) => { return o as IFace2; }));
-            RemovalPairlFaces removalPair = MiscUtil.FindMaximumRemovalPlanes(solidWorks.IGetMathUtility(), faces);
+            RemovalPairlFaces ends = MiscUtil.FindMaximumRemovalPlanes(mathUtility,
+                Array.ConvertAll(shaft.Component.IGetBody().GetFaces(), new Converter<object, IFace2>((o) => { return o as IFace2; })));
 
-            (removalPair.From as IEntity).Select4(true, null);
-            (removalPair.To as IEntity).Select4(true, null);
+            double[] baseBox = firstCylinderBase.Face.GetBox() as double[];
+            Bounding(document, baseBox);
+
+            double[] normal = firstCylinderBase.Face.Normal as double[];
+            
 
 
-
-
-            //IFace2 removalFace;
-            //double distance;
-
-            //body = firstCylinderLocator.Component.GetBody();
-            //faceObjects = body.GetFaces();
-            //faces = Array.ConvertAll(faceObjects, new Converter<object, IFace2>((o) => { return o as IFace2; }));
-            //solidUtil.FindRemovalFace(faces, removalPair.From, out removalFace, out distance);
-
-            //double[] normal1 = removalPair.From.Normal;
-            //double[] normal2 = removalPair.To.Normal;
-            //Debug.WriteLine("normal1: " + string.Join(" | ", normal1));
-            //Debug.WriteLine("normal2: " + string.Join(" | ", normal2));
-
-            //IMathVector v1 = solidUtil.MathUtility.CreateVector(normal1);
-
-            //foreach (IFace2 face in faces)
-            //{
-            //    (face as Entity).Select4(true, null);
-            //    Surface s = face.GetSurface();
-            //    double[] ar = s.PlaneParams;
-            //    double[] normal = face.Normal;
-            //    Debug.WriteLine(string.Join(" | ", normal));
-            //    IMathVector v = solidUtil.MathUtility.CreateVector(normal);
-            //    IMathVector vnorm = v.Normalise();
-            //    Debug.WriteLine("params: " + string.Join(" | ", ar));
-            //    Debug.WriteLine("normalize vector: " + string.Join(" | ", (vnorm.ArrayData as double[])));
-            //    Debug.WriteLine("is parallel " + 
-            //        (solidUtil.IsCoDirectional(v, v1) || 
-            //         solidUtil.IsCoDirectional(solidUtil.Negative(v), v1)));
-            //}
+            (firstCylinderBase as IEntity).Select4(true, null);
+            //(ends.To as IEntity).Select4(true, null);
         }
 
-        public IFace2 FindRemoteFaceOfCylinderLocator(Locator locator, IFace2 originFace)
+
+        public void Bounding(IModelDoc2 model, double[] boxFeature)
         {
-            Debug.WriteLine("FindRemoteFaceOfCylinderLocator");
-            double[] p = originFace.Normal;
-            Debug.WriteLine("origin     " + string.Join(" | ", p));
-            IBody2 body = locator.Component.GetBody();
-            object[] faces = body.GetFaces();
-            IFace2 f = null;
+            SketchManager sketchManager = default(SketchManager);
+            SketchPoint[] sketchPoint = new SketchPoint[9];
+            SketchSegment[] sketchSegment = new SketchSegment[13];
 
-            foreach (object o in faces)
-            {
-                IFace2 face = o as IFace2;
-                //(face as IEntity).Select4(true, null);
-                ISurface surface = face.GetSurface();
-                if (surface.IsPlane())
-                {
-                    double[] q = face.Normal;
-                    Debug.WriteLine(string.Join(" | ", q));
-                    if (p[0] == q[0] && p[1] == q[1] && p[2] == q[2])
-                    {
-                        return face;
-                    }
-                    Thread.Sleep(1000);
-                }
-            }
+            Debug.Print("  point1 = " + "(" + boxFeature[0] * 1000.0 + ", " + boxFeature[1] * 1000.0 + ", " + boxFeature[2] * 1000.0 + ") mm");
+            Debug.Print("  point2 = " + "(" + boxFeature[3] * 1000.0 + ", " + boxFeature[4] * 1000.0 + ", " + boxFeature[5] * 1000.0 + ") mm");
+            model.Insert3DSketch2(true);
+            model.SetAddToDB(true);
+            model.SetDisplayWhenAdded(false);
 
-            return f;
+            sketchManager = (SketchManager)model.SketchManager;
+
+            // Draw points at each corner of bounding box
+            sketchPoint[0] = (SketchPoint)sketchManager.CreatePoint(boxFeature[3], boxFeature[1], boxFeature[5]);
+            sketchPoint[1] = (SketchPoint)sketchManager.CreatePoint(boxFeature[0], boxFeature[1], boxFeature[5]);
+            sketchPoint[2] = (SketchPoint)sketchManager.CreatePoint(boxFeature[0], boxFeature[1], boxFeature[2]);
+            sketchPoint[3] = (SketchPoint)sketchManager.CreatePoint(boxFeature[3], boxFeature[1], boxFeature[2]);
+            sketchPoint[4] = (SketchPoint)sketchManager.CreatePoint(boxFeature[3], boxFeature[4], boxFeature[5]);
+            sketchPoint[5] = (SketchPoint)sketchManager.CreatePoint(boxFeature[0], boxFeature[4], boxFeature[5]);
+            sketchPoint[6] = (SketchPoint)sketchManager.CreatePoint(boxFeature[0], boxFeature[4], boxFeature[2]);
+            sketchPoint[7] = (SketchPoint)sketchManager.CreatePoint(boxFeature[3], boxFeature[4], boxFeature[2]);
+
+            // Now draw bounding box
+            sketchSegment[0] = (SketchSegment)sketchManager.CreateLine(sketchPoint[0].X, sketchPoint[0].Y, sketchPoint[0].Z, sketchPoint[1].X, sketchPoint[1].Y, sketchPoint[1].Z);
+            sketchSegment[1] = (SketchSegment)sketchManager.CreateLine(sketchPoint[1].X, sketchPoint[1].Y, sketchPoint[1].Z, sketchPoint[2].X, sketchPoint[2].Y, sketchPoint[2].Z);
+            sketchSegment[2] = (SketchSegment)sketchManager.CreateLine(sketchPoint[2].X, sketchPoint[2].Y, sketchPoint[2].Z, sketchPoint[3].X, sketchPoint[3].Y, sketchPoint[3].Z);
+            sketchSegment[3] = (SketchSegment)sketchManager.CreateLine(sketchPoint[3].X, sketchPoint[3].Y, sketchPoint[3].Z, sketchPoint[0].X, sketchPoint[0].Y, sketchPoint[0].Z);
+            sketchSegment[4] = (SketchSegment)sketchManager.CreateLine(sketchPoint[0].X, sketchPoint[0].Y, sketchPoint[0].Z, sketchPoint[4].X, sketchPoint[4].Y, sketchPoint[4].Z);
+            sketchSegment[5] = (SketchSegment)sketchManager.CreateLine(sketchPoint[1].X, sketchPoint[1].Y, sketchPoint[1].Z, sketchPoint[5].X, sketchPoint[5].Y, sketchPoint[5].Z);
+            sketchSegment[6] = (SketchSegment)sketchManager.CreateLine(sketchPoint[2].X, sketchPoint[2].Y, sketchPoint[2].Z, sketchPoint[6].X, sketchPoint[6].Y, sketchPoint[6].Z);
+            sketchSegment[7] = (SketchSegment)sketchManager.CreateLine(sketchPoint[3].X, sketchPoint[3].Y, sketchPoint[3].Z, sketchPoint[7].X, sketchPoint[7].Y, sketchPoint[7].Z);
+            sketchSegment[8] = (SketchSegment)sketchManager.CreateLine(sketchPoint[4].X, sketchPoint[4].Y, sketchPoint[4].Z, sketchPoint[5].X, sketchPoint[5].Y, sketchPoint[5].Z);
+            sketchSegment[9] = (SketchSegment)sketchManager.CreateLine(sketchPoint[5].X, sketchPoint[5].Y, sketchPoint[5].Z, sketchPoint[6].X, sketchPoint[6].Y, sketchPoint[6].Z);
+            sketchSegment[10] = (SketchSegment)sketchManager.CreateLine(sketchPoint[6].X, sketchPoint[6].Y, sketchPoint[6].Z, sketchPoint[7].X, sketchPoint[7].Y, sketchPoint[7].Z);
+            sketchSegment[11] = (SketchSegment)sketchManager.CreateLine(sketchPoint[7].X, sketchPoint[7].Y, sketchPoint[7].Z, sketchPoint[4].X, sketchPoint[4].Y, sketchPoint[4].Z);
+
+            model.SetDisplayWhenAdded(true);
+            model.SetAddToDB(false);
+            model.Insert3DSketch2(true);
         }
 
         public void DoProcessSelection()
@@ -244,22 +240,40 @@ namespace FunnyMacros.Util
             int quantity = selector.GetSelectedObjectCount();
             if (quantity != 3)
             {
-                throw new ArgumentException("Make sure, what you pick 3 face!");
+                int a = (int)swMessageBoxIcon_e.swMbWarning;
+                int b = (int)swMessageBoxBtn_e.swMbOk;
+                solidWorks.SendMsgToUser2("Make sure, what you pick 3 face!", a, b);
             }
             Debug.WriteLine("selected {0} surface", quantity);
             for (int i = 1; i <= quantity; ++i)
             {
                 try
                 {
-                    IFace2 face = (IFace2)selector.GetSelectedObject6(i, -1);
-                    IFeature feature = (IFeature)face.GetFeature();
-                    ISurface surface = (ISurface)face.GetSurface();
+                    IComponent2 component = selector.GetSelectedObjectsComponent4(i, -1) as IComponent2;
+                    IFace2 face = selector.GetSelectedObject6(i, -1) as IFace2;
+                    IFeature feature = face.IGetFeature();
+                    ISurface surface = face.IGetSurface();
                     Debug.WriteLine("face {0}. details: materialIdName: {1}, materialUserName: {2}", i, face.MaterialIdName, face.MaterialUserName);
                     Debug.WriteLine("\tfeature details. name: {0}, visible: {1}, description: {2}", feature.Name, feature.Visible, feature.Description);
                     Debug.WriteLine("\tsurface details. isPlane: {0}, isCylinder: {1}", surface.IsPlane(), surface.IsCylinder());
-                    planeBase = planeBase == null && surface.IsPlane() ? face : planeBase;
-                    firstCylinderBase = firstCylinderBase == null && surface.IsCylinder() ? face : firstCylinderBase;
-                    secondCylinderBase = secondCylinderBase == null && surface.IsCylinder() ? face : secondCylinderBase;
+                    if (surface.IsPlane() && planeBase == null)
+                    {
+                        planeBase.Face = face;
+                        planeBase.Component = component;
+                    }
+                    else if (surface.IsCylinder())
+                    {
+                        if (firstCylinderBase == null)
+                        {
+                            firstCylinderBase.Face = face;
+                            firstCylinderBase.Component = component;
+                        }
+                        else if(secondCylinderBase == null)
+                        {
+                            secondCylinderBase.Face = face;
+                            secondCylinderBase.Component = component;
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {

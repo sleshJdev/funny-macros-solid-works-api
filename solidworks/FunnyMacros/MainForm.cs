@@ -6,7 +6,8 @@ namespace FunnyMacros
 {
     public partial class MainForm : Form
     {
-        private SolidWorksHelper solidWorksHelper = new SolidWorksHelper();
+
+        private SolidWorksMacro solidWorksHelper = new SolidWorksMacro();
 
         public MainForm()
         {            
@@ -14,7 +15,7 @@ namespace FunnyMacros
             solidWorksHelper.Close();
             this.runSwButton.Click += RunSolidWorksButton_Click;
             this.processSelectionButton.Click += ProcessSelectionButton_Click;
-            this.loadLocatorsButton.Click += LoadLocatorsButton_Click;
+            this.alignWithHorizontal.Click += AlignWithHorizont_Click;
             this.addMateButton.Click += AddMateButton_Click;
             this.FormClosing += MainForm_FormClosing;
         }
@@ -44,9 +45,9 @@ namespace FunnyMacros
             solidWorksHelper.AddMate();
         }
 
-        private void LoadLocatorsButton_Click(object sender, EventArgs e)
+        private void AlignWithHorizont_Click(object sender, EventArgs e)
         {
-
+            solidWorksHelper.AlignWithHorizontAll();
         }
 
         private void MainForm_FormClosing(object sender, EventArgs e)

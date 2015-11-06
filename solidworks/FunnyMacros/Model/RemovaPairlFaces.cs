@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FunnyMacros.Model
 {
-    class RemovalPairlFaces
+    public class RemovalPairlFaces
     {
         public IFace2 From { get; set; }
         public IFace2 To { get; set; }

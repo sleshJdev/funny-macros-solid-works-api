@@ -45,8 +45,12 @@
       <HintPath>C:\Program Files\SolidWorks Corp\SolidWorks\api\redist\SolidWorks.Interop.swconst.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="SolidWorks.Proxy.Sldworks">
+      <HintPath>C:\Program Files\SolidWorks Corp\SolidWorks\SolidWorks.Proxy.Sldworks.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -72,6 +76,7 @@
     <Compile Include="Util\SolidWorksHelper.cs" />
     <Compile Include="Util\MiscUtil.cs" />
     <Compile Include="Model\Vector.cs" />
+    <Compile Include="Util\SolidWorksMacroStartup.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

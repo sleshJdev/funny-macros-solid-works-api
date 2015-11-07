@@ -28,9 +28,8 @@ namespace FunnyMacros.Util
             {
                 this.solidWorks = (SldWorks)this.solidWorks;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
                 proxyFailed = true;
             }
 

@@ -4,7 +4,7 @@ using SolidWorks.Interop.swconst;
 
 namespace FunnyMacros.Util
 {
-    class LoadUtil
+    class Loader
     {
         //quantity of errors
         private static int qe;

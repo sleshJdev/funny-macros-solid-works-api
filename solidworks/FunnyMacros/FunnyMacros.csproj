@@ -72,15 +72,18 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Model\Base.cs" />
+    <Compile Include="Model\Box.cs" />
+    <Compile Include="Model\MountFace.cs" />
+    <Compile Include="Model\Model.cs" />
+    <Compile Include="Model\Vector.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Model\Locator.cs" />
     <Compile Include="Model\RemovaPairlFaces.cs" />
-    <Compile Include="Util\DrawUtil.cs" />
-    <Compile Include="Util\LoadUtil.cs" />
+    <Compile Include="Util\Drawer.cs" />
+    <Compile Include="Util\Loader.cs" />
     <Compile Include="Util\SolidWorksHelper.cs" />
-    <Compile Include="Util\MiscUtil.cs" />
+    <Compile Include="Util\Helper.cs" />
     <Compile Include="Util\SolidWorksMacroStartup.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

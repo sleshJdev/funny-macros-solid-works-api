@@ -3,7 +3,7 @@ using SolidWorks.Interop.sldworks;
 
 namespace FunnyMacros.Util
 {
-    class DrawUtil
+    class Drawer
     {
         public static void DrawPoint(IModelDoc2 model, double x, double y, double z)
         {

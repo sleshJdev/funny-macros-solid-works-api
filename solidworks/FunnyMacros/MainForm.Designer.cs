@@ -33,6 +33,7 @@
             this.processSelectionButton = new System.Windows.Forms.Button();
             this.alignWithHorizontal = new System.Windows.Forms.Button();
             this.alignWithShaftButton = new System.Windows.Forms.Button();
+            this.setupCorpusButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // runSwButton
@@ -64,7 +65,7 @@
             // 
             // alignWithHorizontal
             // 
-            this.alignWithHorizontal.Location = new System.Drawing.Point(12, 272);
+            this.alignWithHorizontal.Location = new System.Drawing.Point(12, 311);
             this.alignWithHorizontal.Name = "alignWithHorizontal";
             this.alignWithHorizontal.Size = new System.Drawing.Size(180, 43);
             this.alignWithHorizontal.TabIndex = 4;
@@ -73,18 +74,28 @@
             // 
             // alignWithShaftButton
             // 
-            this.alignWithShaftButton.Location = new System.Drawing.Point(12, 223);
+            this.alignWithShaftButton.Location = new System.Drawing.Point(12, 262);
             this.alignWithShaftButton.Name = "alignWithShaftButton";
             this.alignWithShaftButton.Size = new System.Drawing.Size(180, 43);
             this.alignWithShaftButton.TabIndex = 5;
             this.alignWithShaftButton.Text = "Align With Shaft";
             this.alignWithShaftButton.UseVisualStyleBackColor = true;
             // 
+            // setupCorpusButton
+            // 
+            this.setupCorpusButton.Location = new System.Drawing.Point(12, 159);
+            this.setupCorpusButton.Name = "setupCorpusButton";
+            this.setupCorpusButton.Size = new System.Drawing.Size(180, 43);
+            this.setupCorpusButton.TabIndex = 6;
+            this.setupCorpusButton.Text = "Setup Corpus";
+            this.setupCorpusButton.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(229, 327);
+            this.ClientSize = new System.Drawing.Size(229, 366);
+            this.Controls.Add(this.setupCorpusButton);
             this.Controls.Add(this.alignWithShaftButton);
             this.Controls.Add(this.alignWithHorizontal);
             this.Controls.Add(this.processSelectionButton);
@@ -103,6 +114,7 @@
         private System.Windows.Forms.Button processSelectionButton;
         private System.Windows.Forms.Button alignWithHorizontal;
         private System.Windows.Forms.Button alignWithShaftButton;
+        private System.Windows.Forms.Button setupCorpusButton;
     }
 }
 

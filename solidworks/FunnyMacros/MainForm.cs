@@ -16,6 +16,7 @@ namespace FunnyMacros
             this.processSelectionButton.Click += ProcessSelectionButton_Click;
             this.alignWithHorizontal.Click += AlignWithHorizont_Click;
             this.alignWithShaftButton.Click += AlignWithShaftButton_Click;
+            this.setupCorpusButton.Click += SetupCorpusButton_Click;
             this.addMateButton.Click += AddMateButton_Click;
             this.FormClosing += MainForm_FormClosing;
         }
@@ -34,6 +35,11 @@ namespace FunnyMacros
         private void AddMateButton_Click(object sender, EventArgs e)
         {
             solidWorksHelper.AddMate();
+        }
+
+        private void SetupCorpusButton_Click(object sender, EventArgs e)
+        {
+            solidWorksHelper.SetupCorpus();
         }
 
         private void AlignWithShaftButton_Click(object sender, EventArgs e)

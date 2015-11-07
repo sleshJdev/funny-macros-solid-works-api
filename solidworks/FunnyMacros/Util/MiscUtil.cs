@@ -30,7 +30,7 @@ namespace FunnyMacros.Util
             return result;
         }
 
-        public static double[] GetCenterOf(IFeature feature)
+        public static double[] GetCenterBoxOf(IFeature feature)
         {
             object box = null;
             feature.GetBox(ref box);
@@ -92,8 +92,7 @@ namespace FunnyMacros.Util
             for (int i = 0; i < faces.Length; ++i)
             {
                 IFace2 fromFace = faces[i];
-                ISurface fromSurface = fromFace.GetSurface();
-                if (fromSurface.IsPlane())
+                if (fromFace.IGetSurface().IsPlane())
                 {                    
                     IFace2 toFace;
                     double distance;
@@ -154,14 +153,12 @@ namespace FunnyMacros.Util
             difference[1] = oneVector[1] - twoVector[1];
             difference[2] = oneVector[2] - twoVector[2];
 
-            return Equal(difference[0], 0, 1) && Equal(difference[1], 0, 1) && Equal(difference[2], 0, 1);
+            return Equal(difference[0]) && Equal(difference[1]) && Equal(difference[2]);
         }
 
-        public static bool Equal(double d1, double d2, int toleranceDecimalPlaces)
+        public static bool Equal(double delta)
         {
-            double tolerance = 1.0 / (Math.Pow(10, toleranceDecimalPlaces));
-
-            return Math.Abs(d1 - d2) < tolerance;
+            return Math.Abs(delta) < 0.15/*precision*/;
         }
 
         public static IMathVector Negative(IMathUtility mathUtility, IMathVector origin)

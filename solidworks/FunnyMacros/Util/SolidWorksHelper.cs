@@ -7,6 +7,7 @@ using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using FunnyMacros.Model;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace FunnyMacros.Util
 {
@@ -24,7 +25,11 @@ namespace FunnyMacros.Util
         private const string CORPUS_NAME = "corpus.sldprt";
         private const string SHAFT_NAME = "shaft.sldprt";
         private const string PLACE_LOCATOR_NAME = "plane-locator.sldprt";
-        private const string CYLINDER_LOCATOR_NAME = "cylinder-locator.sldprt";
+        private const string CYLINDER_LOCATOR_NAME_1 = "cylinder-locator-1.sldprt";
+        private const string CYLINDER_LOCATOR_NAME_2 = "cylinder-locator-2.sldprt";
+
+        private const string PARAMETER_PLANE_LOCATOR_HEIGHT = "L";
+        private const string PARAMETER_CYLINDER_LOCATOR_HEIGHT = "___height_cilynder_locator_base___";
 
         //solidworks application instance
         public ISldWorks solidWorks;
@@ -33,6 +38,7 @@ namespace FunnyMacros.Util
         //the assembly of details
         private IModelDoc2 document;
         private IAssemblyDoc assembly;
+        private IFeature horizont;
 
         //the corpus - the base for the design
         private Locator corpus = new Locator();
@@ -47,8 +53,8 @@ namespace FunnyMacros.Util
 
         //locator for bases
         private Locator planeLocator = new Locator();
-        private Locator firstCylinderLocator = new Locator();
-        private Locator secondCylinderLocator = new Locator();
+        private Locator cylinderLocator1 = new Locator();
+        private Locator cylinderLocator2 = new Locator();
 
         public void Open()
         {
@@ -58,21 +64,25 @@ namespace FunnyMacros.Util
 
         public void Initalize()
         {
+            mathUtility = solidWorks.IGetMathUtility();
+
             document = LoadUtil.LoadAssembly(solidWorks, Path.Combine(HOME_PATH, ASSEMBLY_NAME));
             assembly = document as IAssemblyDoc;
+            horizont = assembly.IFeatureByName("Сверху");
+            horizont = horizont == null ? assembly.IFeatureByName("Top") : horizont;
             Debug.WriteLine("loading of assembly ... done!");
 
             corpus.Model = LoadUtil.LoadModel(solidWorks, Path.Combine(HOME_PATH, CORPUS_NAME));
             planeLocator.Model = LoadUtil.LoadModel(solidWorks, Path.Combine(HOME_PATH, PLACE_LOCATOR_NAME));
-            firstCylinderLocator.Model = LoadUtil.LoadModel(solidWorks, Path.Combine(HOME_PATH, CYLINDER_LOCATOR_NAME));
-            secondCylinderLocator.Model = LoadUtil.LoadModel(solidWorks, Path.Combine(HOME_PATH, CYLINDER_LOCATOR_NAME));
+            cylinderLocator1.Model = LoadUtil.LoadModel(solidWorks, Path.Combine(HOME_PATH, CYLINDER_LOCATOR_NAME_1));
+            cylinderLocator2.Model = LoadUtil.LoadModel(solidWorks, Path.Combine(HOME_PATH, CYLINDER_LOCATOR_NAME_2));
             shaft.Model = LoadUtil.LoadModel(solidWorks, Path.Combine(HOME_PATH, SHAFT_NAME));
             Debug.WriteLine("loading of models ... done!");
 
             corpus.Component = LoadUtil.AddModelToAssembly(assembly, corpus.Model.GetPathName(), 0.0, -60.0 / 1000, 0.0);
             planeLocator.Component = LoadUtil.AddModelToAssembly(assembly, planeLocator.Model.GetPathName(), 250.0 / 1000, 0.0, 0.0);
-            firstCylinderLocator.Component = LoadUtil.AddModelToAssembly(assembly, firstCylinderLocator.Model.GetPathName(), 0.0, 0.0, 100.0 / 1000);
-            secondCylinderLocator.Component = LoadUtil.AddModelToAssembly(assembly, secondCylinderLocator.Model.GetPathName(), 0.0, 0.0, -100.0 / 1000);
+            cylinderLocator1.Component = LoadUtil.AddModelToAssembly(assembly, cylinderLocator1.Model.GetPathName(), 0.0, 0.0, 150.0 / 1000);
+            cylinderLocator2.Component = LoadUtil.AddModelToAssembly(assembly, cylinderLocator2.Model.GetPathName(), 0.0, 0.0, -150.0 / 1000);
             shaft.Component = LoadUtil.AddModelToAssembly(assembly, shaft.Model.GetPathName(), 0.0, 0.0, 0.0);
             Debug.WriteLine("adding to assemply ... done!");
 
@@ -84,12 +94,12 @@ namespace FunnyMacros.Util
             ClearSelection();
             corpus.Component.Select4(true, null, false);
             planeLocator.Component.Select4(true, null, false);
-            firstCylinderLocator.Component.Select4(true, null, false);
-            secondCylinderLocator.Component.Select4(true, null, false);
+            cylinderLocator1.Component.Select4(true, null, false);
+            cylinderLocator2.Component.Select4(true, null, false);
             assembly.UnfixComponent();
             Debug.WriteLine("unfix locators  ... done!");
 
-            mathUtility = solidWorks.IGetMathUtility();
+            
         }
 
         private void ClearSelection()
@@ -105,24 +115,21 @@ namespace FunnyMacros.Util
         public void AlignAllWithHorizont()
         {
             //conjugation with the horizontal plane
-            AlignWithHorizont(corpus.Component);
-            AlignWithHorizont(shaft.Component);
-            AlignWithHorizont(planeLocator.Component);
-            AlignWithHorizont(firstCylinderLocator.Component);
-            AlignWithHorizont(secondCylinderLocator.Component);
+            AlignWithPlane(corpus.Component, horizont);
+            AlignWithPlane(shaft.Component, horizont);
+            AlignWithPlane(planeLocator.Component, horizont);
+            AlignWithPlane(cylinderLocator1.Component, horizont);
+            AlignWithPlane(cylinderLocator2.Component, horizont);
         }
 
-        private void AlignWithHorizont(IComponent2 component)
+        private void AlignWithPlane(IComponent2 component, IFeature plane)
         {
             ClearSelection();
             IFeature face = component.FeatureByName("Сверху");
-            IFeature horizont = assembly.IFeatureByName("Сверху");
-
             face = face == null ? component.FeatureByName("Top") : face;
-            horizont = horizont == null ? assembly.IFeatureByName("Top") : horizont;
 
             face.Select2(true, (int)swSelectionMarkAction_e.swSelectionMarkAppend);
-            horizont.Select2(true, (int)swSelectionMarkAction_e.swSelectionMarkAppend);
+            plane.Select2(true, (int)swSelectionMarkAction_e.swSelectionMarkAppend);
 
             int a = (int)swMateType_e.swMatePARALLEL;
             int b = (int)swMateAlign_e.swAlignNONE;
@@ -132,55 +139,152 @@ namespace FunnyMacros.Util
 
         public void AddMate()
         {
-            IFeature feature = planeLocator.Component.FeatureByName("mouting-plane");
-            AddMate(feature, planeBase.Face, (int)swMateType_e.swMateCOINCIDENT);
+            IFeature feature = planeLocator.Component.FeatureByName("___mouting_plane___");
+            AddMate(feature, planeBase.Face, (int)swMateType_e.swMateCOINCIDENT, (int)swMateAlign_e.swAlignSAME);
             Debug.WriteLine("mate for plane base  with shaft ... done!");
             
-            AddMateCylinderLocator(firstCylinderLocator.Component, firstCylinderBase.Face);
-            AddMateCylinderLocator(secondCylinderLocator.Component, secondCylinderBase.Face);
+            AddMateCylinderLocator(cylinderLocator1.Component, firstCylinderBase.Face);
+            AddMateCylinderLocator(cylinderLocator2.Component, secondCylinderBase.Face);
             Debug.WriteLine("cylinder bases mate with shaft ... done!");
 
-            MiscUtil.Translate(mathUtility, firstCylinderLocator.Component, -0.4, -0.4, -0.4);
-            MiscUtil.Translate(mathUtility, secondCylinderLocator.Component, 0.6, 0.6, 0.6);
+            MiscUtil.Translate(mathUtility, cylinderLocator1.Component, -0.4, -0.4, -0.4);
+            MiscUtil.Translate(mathUtility, cylinderLocator2.Component, 0.6, 0.6, 0.6);
             Commit();
             Debug.WriteLine("added mate ... done!");
         }
 
         private void AddMateCylinderLocator(IComponent2 cylinderLocator, IFace2 cylinderBase)
         {
-            IFeature firstFeature = cylinderLocator.FeatureByName("mount-plane-1");
-            IFeature secondFeature = cylinderLocator.FeatureByName("mount-plane-2");
+            IFeature firstFeature = cylinderLocator.FeatureByName("___mount_plane_1___");
+            IFeature secondFeature = cylinderLocator.FeatureByName("___mount_plane_2___");
 
-            AddMate(firstFeature, cylinderBase, (int)swMateType_e.swMateTANGENT);
-            AddMate(secondFeature, cylinderBase, (int)swMateType_e.swMateTANGENT);
+            AddMate(firstFeature, cylinderBase, (int)swMateType_e.swMateTANGENT, (int)swMateAlign_e.swAlignSAME);
+            AddMate(secondFeature, cylinderBase, (int)swMateType_e.swMateTANGENT, (int)swMateAlign_e.swAlignSAME);
         }
 
-        private void AddMate(IFeature locator, IFace2 face, int mateType)
+        private void AddMate(IFace2 face1, IFace2 face2, int mateType, int alignType)
         {
             ClearSelection();
-            locator.Select2(true, (int)swSelectionMarkAction_e.swSelectionMarkAppend);
-            (face as IEntity).Select4(true, null);
-            assembly.AddMate3(mateType, (int)swMateAlign_e.swAlignSAME, false, 0, 0, 0, 0, 0, 0, 0, 0, false, out qe);
+            (face1 as IEntity).Select4(true, null);
+            (face2 as IEntity).Select4(true, null);
+            assembly.AddMate3(mateType, alignType, false, 0, 0, 0, 0, 0, 0, 0, 0, false, out qe);
             ClearSelection();
+        }
+
+        private void AddMate(IFeature feature, IFace2 face, int mateType, int alignType)
+        {
+            ClearSelection();
+            feature.Select2(true, (int)swSelectionMarkAction_e.swSelectionMarkAppend);
+            (face as IEntity).Select4(true, null);
+            assembly.AddMate3(mateType, alignType, false, 0, 0, 0, 0, 0, 0, 0, 0, false, out qe);
+            ClearSelection();
+        }
+
+        public void SetupCorpus()
+        {
+            IFace2 face1 = cylinderLocator1.GetBottom(mathUtility);
+            IFace2 face2 = cylinderLocator2.GetBottom(mathUtility);
+
+            double[] centerOfFace1 = MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, cylinderLocator1.Transform, MiscUtil.GetCenterOf(face1.GetBox()));
+            double[] centerOfFace2 = MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, cylinderLocator2.Transform, MiscUtil.GetCenterOf(face2.GetBox()));
+
+            Debug.WriteLine("center of face2: {0}", string.Join(" | ", centerOfFace1), string.Empty);
+            Debug.WriteLine("center of face2: {0}", string.Join(" | ", centerOfFace2), string.Empty);
+
+            IFace2 lowestFaceOfCilynderLocator = null;
+            Locator shortLocator = null;
+            if (centerOfFace1[1] < centerOfFace2[1])
+            {
+                lowestFaceOfCilynderLocator = face1;
+                shortLocator = cylinderLocator2;
+            }
+            else
+            {
+                lowestFaceOfCilynderLocator = face2;
+                shortLocator = cylinderLocator1;
+            }
+
+            IFace2 topCorpusFace = corpus.GetTop(mathUtility);
+            IFace2 lowestFaceOfPlaneLocatorFace = planeLocator.GetBottom(mathUtility);
+
+            int a = (int)swMateType_e.swMateCOINCIDENT;
+            int b = (int)swMateAlign_e.swAlignAGAINST;
+            AddMate(topCorpusFace, lowestFaceOfCilynderLocator, a, b);
+            AddMate(topCorpusFace, lowestFaceOfPlaneLocatorFace, a, b);
+
+            double[] centerLowestFaceShortLocator = MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, shortLocator.Transform, shortLocator.GetBottom(mathUtility).GetBox() as double[]);
+            double[] centerLowestFaceCorpus = MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, corpus.Transform, topCorpusFace.GetBox() as double[]);
+            double delta = Math.Abs(1000.0 * (centerLowestFaceShortLocator[1] - centerLowestFaceCorpus[1]));
+
+            IEquationMgr equationManager = shortLocator.Model.GetEquationMgr();
+            double value = Convert.ToDouble(GetPropertyValue(equationManager, PARAMETER_CYLINDER_LOCATOR_HEIGHT)) + delta;
+             
+            SetPropertyValue(equationManager, PARAMETER_CYLINDER_LOCATOR_HEIGHT, Convert.ToInt32(value).ToString());
+            Commit();
+
+            //AddMate(topCorpusFace, shortLocator.GetBottom(mathUtility), a, b);
+
+            delta = Math.Abs(1000.0 * (MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, planeBase.Transform, planeBase.Box)[4] - 
+                                       MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, planeLocator.Transform, planeLocator.Box)[4]));
+            value = Convert.ToDouble(GetPropertyValue(equationManager, PARAMETER_PLANE_LOCATOR_HEIGHT)) + delta;
+            equationManager = planeLocator.Model.GetEquationMgr();
+            SetPropertyValue(equationManager, PARAMETER_PLANE_LOCATOR_HEIGHT, Convert.ToInt32(value).ToString());
+            Commit();
+        }
+ 
+        public void SetPropertyValue(IEquationMgr manager, string property, string value)
+        {
+            Debug.WriteLine("file path: {0}", manager.FilePath, string.Empty);
+            for (int i = 0; i < manager.GetCount(); ++i)
+            {
+                string equation = manager.Equation[i];
+                Debug.WriteLine("equation {0}, statement: {1}, value: {2}", i, equation, manager.Value[i]);
+                if (equation.Contains(property))
+                {
+                    string newEquation = new Regex(@"=\s*(\d*)").Replace(equation, (m) => { return string.Format("={0}", value); }, 1);
+                    Debug.WriteLine("equation: {0}, new equation: {1}", equation, newEquation);
+                    manager.Delete(i);
+                    manager.Add2(i, newEquation, true);
+                    return;
+                }
+            }
+        }
+
+        public string GetPropertyValue(IEquationMgr manager, string property)
+        {
+            for (int i = 0; i < manager.GetCount(); ++i)
+            {
+                string equation = manager.Equation[i];
+                if (equation.Contains(property))
+                {
+                    Match match = new Regex(@"=\s*(\d*)").Match(equation);
+                    if (match.Success)
+                    {
+                        return match.Groups[1].Value;
+                    }
+                }
+            }
+
+            return null;
         }
 
         public void AlignWithShaft()
         {
             //Bounding(document, MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, planeBase.Component.Transform2, planeBase.Face.GetBox() as double[]));
             //Bounding(document, planeLocator.Component.GetBox(true, true) as double[]);
-            double[] planeBaseCenter = MiscUtil.GetCenterOf(planeBase.Face.GetBox() as double[]);
+            double[] planeBaseCenter = MiscUtil.GetCenterOf(planeBase.Box);
             MiscUtil.Translate(mathUtility, planeLocator.Component,
                 planeBaseCenter[0]/*dx*/,
                 planeBaseCenter[1]/*dy*/,
                 planeBaseCenter[2]/*dz*/);
 
-            double[] firstBox = MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, firstCylinderBase.Component.Transform2, firstCylinderBase.Face.GetBox() as double[]);
+            double[] firstBox = MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, firstCylinderBase.Transform, firstCylinderBase.Box);
             firstBox = MiscUtil.GetCenterOf(firstBox);
-            MiscUtil.Translate(mathUtility, firstCylinderLocator.Component, firstBox[0], firstBox[1], firstBox[2]);
+            MiscUtil.Translate(mathUtility, cylinderLocator1.Component, firstBox[0], firstBox[1], firstBox[2]);
 
-            double[] secondBox = MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, secondCylinderBase.Component.Transform2, secondCylinderBase.Face.GetBox() as double[]);
+            double[] secondBox = MiscUtil.GetInGlobalCoordinatesSystem(mathUtility, secondCylinderBase.Transform, secondCylinderBase.Box);
             secondBox = MiscUtil.GetCenterOf(secondBox);
-            MiscUtil.Translate(mathUtility, secondCylinderLocator.Component, secondBox[0], secondBox[1], secondBox[2]);
+            MiscUtil.Translate(mathUtility, cylinderLocator2.Component, secondBox[0], secondBox[1], secondBox[2]);
 
             Commit();
             Debug.WriteLine("align with shaft ... done!");

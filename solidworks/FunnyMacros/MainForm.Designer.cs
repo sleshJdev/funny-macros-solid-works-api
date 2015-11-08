@@ -34,6 +34,7 @@
             this.alignWithHorizontal = new System.Windows.Forms.Button();
             this.alignWithShaftButton = new System.Windows.Forms.Button();
             this.setupCorpusButton = new System.Windows.Forms.Button();
+            this.adjustSizesButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // runSwButton
@@ -65,7 +66,7 @@
             // 
             // alignWithHorizontal
             // 
-            this.alignWithHorizontal.Location = new System.Drawing.Point(12, 311);
+            this.alignWithHorizontal.Location = new System.Drawing.Point(12, 159);
             this.alignWithHorizontal.Name = "alignWithHorizontal";
             this.alignWithHorizontal.Size = new System.Drawing.Size(180, 43);
             this.alignWithHorizontal.TabIndex = 4;
@@ -74,7 +75,7 @@
             // 
             // alignWithShaftButton
             // 
-            this.alignWithShaftButton.Location = new System.Drawing.Point(12, 262);
+            this.alignWithShaftButton.Location = new System.Drawing.Point(12, 208);
             this.alignWithShaftButton.Name = "alignWithShaftButton";
             this.alignWithShaftButton.Size = new System.Drawing.Size(180, 43);
             this.alignWithShaftButton.TabIndex = 5;
@@ -83,18 +84,28 @@
             // 
             // setupCorpusButton
             // 
-            this.setupCorpusButton.Location = new System.Drawing.Point(12, 159);
+            this.setupCorpusButton.Location = new System.Drawing.Point(12, 257);
             this.setupCorpusButton.Name = "setupCorpusButton";
             this.setupCorpusButton.Size = new System.Drawing.Size(180, 43);
             this.setupCorpusButton.TabIndex = 6;
             this.setupCorpusButton.Text = "Setup Corpus";
             this.setupCorpusButton.UseVisualStyleBackColor = true;
             // 
+            // adjustButton
+            // 
+            this.adjustSizesButton.Location = new System.Drawing.Point(12, 311);
+            this.adjustSizesButton.Name = "adjustButton";
+            this.adjustSizesButton.Size = new System.Drawing.Size(180, 43);
+            this.adjustSizesButton.TabIndex = 7;
+            this.adjustSizesButton.Text = "Adjust The Size";
+            this.adjustSizesButton.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(229, 366);
+            this.Controls.Add(this.adjustSizesButton);
             this.Controls.Add(this.setupCorpusButton);
             this.Controls.Add(this.alignWithShaftButton);
             this.Controls.Add(this.alignWithHorizontal);
@@ -115,6 +126,7 @@
         private System.Windows.Forms.Button alignWithHorizontal;
         private System.Windows.Forms.Button alignWithShaftButton;
         private System.Windows.Forms.Button setupCorpusButton;
+        private System.Windows.Forms.Button adjustSizesButton;
     }
 }
 

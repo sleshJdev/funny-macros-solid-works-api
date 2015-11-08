@@ -9,6 +9,9 @@ namespace FunnyMacros.Model
 {
     class Box
     {
+        public Box() : this(new double[6])
+        {
+        }
         public Box(double[] coordinatesCorners)
         {
             if (coordinatesCorners == null)
@@ -22,24 +25,43 @@ namespace FunnyMacros.Model
             }
 
             CoordinatesCorners = coordinatesCorners;
-
-            Xmin = coordinatesCorners[0];
-            Ymin = coordinatesCorners[1];
-            Zmin = coordinatesCorners[2];
-
-            Xmax = coordinatesCorners[3];
-            Ymax = coordinatesCorners[4];
-            Zmax = coordinatesCorners[5];
         }
 
         public double[] CoordinatesCorners { get; set; }
 
-        public double Xmin { get; set; }
-        public double Ymin { get; set; }
-        public double Zmin { get; set; }
+        public double Xmin
+        {
+            get { return CoordinatesCorners[0]; }
+            set { CoordinatesCorners[0] = value; }
+        }
 
-        public double Xmax { get; set; }
-        public double Ymax { get; set; }
-        public double Zmax { get; set; }
+        public double Ymin
+        {
+            get { return CoordinatesCorners[1]; }
+            set { CoordinatesCorners[1] = value; }
+        }
+        public double Zmin
+        {
+            get { return CoordinatesCorners[2]; }
+            set { CoordinatesCorners[2] = value; }
+        }
+
+        public double Xmax
+        {
+            get { return CoordinatesCorners[3]; }
+            set { CoordinatesCorners[3] = value; }
+        }
+
+        public double Ymax
+        {
+            get { return CoordinatesCorners[4]; }
+            set { CoordinatesCorners[4] = value; }
+        }
+
+        public double Zmax
+        {
+            get { return CoordinatesCorners[5]; }
+            set { CoordinatesCorners[5] = value; }
+        }
     }
 }

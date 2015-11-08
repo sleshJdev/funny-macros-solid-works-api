@@ -8,6 +8,7 @@ using SolidWorks.Interop.swconst;
 using FunnyMacros.Model;
 using System.Threading;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace FunnyMacros.Util
 {
@@ -28,6 +29,8 @@ namespace FunnyMacros.Util
         private const string CYLINDER_LOCATOR_NAME_1 = "cylinder-locator-1.sldprt";
         private const string CYLINDER_LOCATOR_NAME_2 = "cylinder-locator-2.sldprt";
 
+        private const string PARAMETER_CORPUS_WIDTH = "B";
+        private const string PARAMETER_CORPUS_LENGTH = "L";
         private const string PARAMETER_PLANE_LOCATOR_HEIGHT = "L";
         private const string PARAMETER_CYLINDER_LOCATOR_HEIGHT = "___height_cilynder_locator_base___";
 
@@ -213,26 +216,42 @@ namespace FunnyMacros.Util
             double delta = 0;
             double value = 0;
 
-            Box boxLowestFaceDanglingLocator = new Box(Helper.Instance.ApplyTransform(danglingLocator.Transform, danglingLocator.BottomFace.GetBox()));
-            Box boxTopFaceCorpus = new Box(Helper.Instance.ApplyTransform(corpus.Transform, topFaceOfCorpus.GetBox()));
+            Box boxLowestFaceDanglingLocator = new Box(helper.ApplyTransform(danglingLocator.Transform, danglingLocator.BottomFace.GetBox()));
+            Box boxTopFaceCorpus = new Box(helper.ApplyTransform(corpus.Transform, topFaceOfCorpus.GetBox()));
             delta = Math.Abs(1000.0 * (boxLowestFaceDanglingLocator.Ymin - boxTopFaceCorpus.Ymin));
-            value = delta + Convert.ToDouble(Helper.Instance.GetPropertyValue(danglingLocator.EquationManager, PARAMETER_CYLINDER_LOCATOR_HEIGHT));
-            Helper.Instance.SetPropertyValue(danglingLocator.EquationManager, PARAMETER_CYLINDER_LOCATOR_HEIGHT, Convert.ToInt32(value).ToString());
+            value = delta + Convert.ToDouble(helper.GetPropertyValue(danglingLocator.EquationManager, PARAMETER_CYLINDER_LOCATOR_HEIGHT));
+            helper.SetPropertyValue(danglingLocator.EquationManager, PARAMETER_CYLINDER_LOCATOR_HEIGHT, Convert.ToInt32(value).ToString());
             Debug.WriteLine("extension of the dangling locator, delta: {0}mm, value: {1} ... done!", delta, Convert.ToInt32(value));
 
             delta = Math.Abs(1000.0 * (planeBase.FaceGBox.Ymax - planeLocator.LBox.Ymax));
-            value = Convert.ToDouble(Helper.Instance.GetPropertyValue(planeLocator.EquationManager, PARAMETER_PLANE_LOCATOR_HEIGHT)) + delta;
-            Helper.Instance.SetPropertyValue(planeLocator.EquationManager, PARAMETER_PLANE_LOCATOR_HEIGHT, Convert.ToInt32(value).ToString());
+            value = Convert.ToDouble(helper.GetPropertyValue(planeLocator.EquationManager, PARAMETER_PLANE_LOCATOR_HEIGHT)) + delta;
+            helper.SetPropertyValue(planeLocator.EquationManager, PARAMETER_PLANE_LOCATOR_HEIGHT, Convert.ToInt32(value).ToString());
             Debug.WriteLine("extension of the plane locator, delta {0}mm, value: {1}mm ... done!", delta, Convert.ToInt32(value));
 
             Commit();
 
             Debug.WriteLine("setup corpus ... done!");
         }
- 
-        public void SetupSize()
+
+        public void AdjustSize()
         {
-            
+            int i;
+            Box[] boxs = { shaft.LBox, planeLocator.LBox, cylinderLocator1.LBox, cylinderLocator2.LBox };
+            Box boundingBox = new Box();
+            i = 0; boundingBox.Xmin = new double[] { boxs[0].CoordinatesCorners[i], boxs[1].CoordinatesCorners[i], boxs[2].CoordinatesCorners[i], boxs[3].CoordinatesCorners[i] }.Min();
+            i = 1; boundingBox.Ymin = new double[] { boxs[0].CoordinatesCorners[i], boxs[1].CoordinatesCorners[i], boxs[2].CoordinatesCorners[i], boxs[3].CoordinatesCorners[i] }.Min();
+            i = 2; boundingBox.Zmin = new double[] { boxs[0].CoordinatesCorners[i], boxs[1].CoordinatesCorners[i], boxs[2].CoordinatesCorners[i], boxs[3].CoordinatesCorners[i] }.Min();
+            i = 3; boundingBox.Xmax = new double[] { boxs[0].CoordinatesCorners[i], boxs[1].CoordinatesCorners[i], boxs[2].CoordinatesCorners[i], boxs[3].CoordinatesCorners[i] }.Max();
+            i = 4; boundingBox.Ymax = new double[] { boxs[0].CoordinatesCorners[i], boxs[1].CoordinatesCorners[i], boxs[2].CoordinatesCorners[i], boxs[3].CoordinatesCorners[i] }.Max();
+            i = 5; boundingBox.Zmax = new double[] { boxs[0].CoordinatesCorners[i], boxs[1].CoordinatesCorners[i], boxs[2].CoordinatesCorners[i], boxs[3].CoordinatesCorners[i] }.Max();
+
+            int width = Convert.ToInt32(1000.0 * (boundingBox.Zmax - boundingBox.Zmin)) + 50;
+            int length = Convert.ToInt32(1000.0 * (boundingBox.Xmax - boundingBox.Xmin)) + 50;
+
+            helper.SetPropertyValue(corpus.EquationManager, PARAMETER_CORPUS_WIDTH, width.ToString());
+            helper.SetPropertyValue(corpus.EquationManager, PARAMETER_CORPUS_LENGTH, length.ToString());
+
+            Commit();
         }
 
         public void AlignWithShaft()

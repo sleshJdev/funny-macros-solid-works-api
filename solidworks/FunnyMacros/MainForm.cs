@@ -18,6 +18,7 @@ namespace FunnyMacros
             this.alignWithShaftButton.Click += AlignWithShaftButton_Click;
             this.setupCorpusButton.Click += SetupCorpusButton_Click;
             this.addMateButton.Click += AddMateButton_Click;
+            this.adjustSizesButton.Click += AdjustSizesButton_Click;
             this.FormClosing += MainForm_FormClosing;
         }
 
@@ -50,6 +51,11 @@ namespace FunnyMacros
         private void AlignWithHorizont_Click(object sender, EventArgs e)
         {
             solidWorksHelper.AlignAllWithHorizont();
+        }
+
+        private void AdjustSizesButton_Click(object sender, EventArgs e)
+        {
+            solidWorksHelper.AdjustSize();
         }
 
         private void MainForm_FormClosing(object sender, EventArgs e)

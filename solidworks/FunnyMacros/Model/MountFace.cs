@@ -1,5 +1,5 @@
-﻿using FunnyMacros.Util;
-using SolidWorks.Interop.sldworks;
+﻿using SolidWorks.Interop.sldworks;
+using FunnyMacros.Util;
 
 namespace FunnyMacros.Model
 {

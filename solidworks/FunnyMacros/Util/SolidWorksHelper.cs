@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Management;
-using System.Runtime.InteropServices;
+using System.Linq;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using FunnyMacros.Model;
-using System.Threading;
-using System.Text.RegularExpressions;
-using System.Linq;
 
 namespace FunnyMacros.Util
 {

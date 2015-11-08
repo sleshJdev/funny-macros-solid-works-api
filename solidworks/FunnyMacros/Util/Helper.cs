@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using SolidWorks.Interop.sldworks;
 using System.Text.RegularExpressions;
+using SolidWorks.Interop.sldworks;
 using FunnyMacros.Model;
 
 namespace FunnyMacros.Util

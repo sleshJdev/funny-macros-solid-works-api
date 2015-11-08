@@ -1,10 +1,8 @@
-using SolidWorks.Interop.sldworks;
 using System;
-using System.Windows.Forms;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
-using SolidWorks.Interop.swconst;
+using SolidWorks.Interop.sldworks;
 
 namespace FunnyMacros.Util
 {

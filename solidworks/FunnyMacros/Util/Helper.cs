@@ -28,7 +28,7 @@ namespace FunnyMacros.Util
             return Instance;
         }
 
-        public void SetPropertyValue(IEquationMgr manager, string property, string value)
+        public void SetParameter(IEquationMgr manager, string property, string value)
         {
             for (int i = 0; i < manager.GetCount(); ++i)
             {
@@ -44,7 +44,7 @@ namespace FunnyMacros.Util
             }
         }
 
-        public string GetPropertyValue(IEquationMgr manager, string property)
+        public string GetParameter(IEquationMgr manager, string property)
         {
             for (int i = 0; i < manager.GetCount(); ++i)
             {

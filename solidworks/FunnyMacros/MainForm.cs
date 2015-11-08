@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows.Forms;
 using FunnyMacros.Util;
+using System.Drawing;
+using System.Diagnostics;
 
 namespace FunnyMacros
 {
@@ -11,15 +13,21 @@ namespace FunnyMacros
         public MainForm()
         {
             InitializeComponent();
+            runSwButton.Click               += RunSolidWorksButton_Click;
+            checkSizeAccordanceButton.Click += CheckSizeAccordanceButton_Click;
+            processSelectionButton.Click    += ProcessSelectionButton_Click;
+            alignWithHorizontal.Click       += AlignWithHorizont_Click;
+            alignWithShaftButton.Click      += AlignWithShaftButton_Click;
+            setupCorpusButton.Click         += SetupCorpusButton_Click;
+            addMateButton.Click             += AddMateButton_Click;
+            adjustSizesButton.Click         += AdjustSizesButton_Click;
+            FormClosing                     += MainForm_FormClosing;
             solidWorksHelper.Close();
-            this.runSwButton.Click += RunSolidWorksButton_Click;
-            this.processSelectionButton.Click += ProcessSelectionButton_Click;
-            this.alignWithHorizontal.Click += AlignWithHorizont_Click;
-            this.alignWithShaftButton.Click += AlignWithShaftButton_Click;
-            this.setupCorpusButton.Click += SetupCorpusButton_Click;
-            this.addMateButton.Click += AddMateButton_Click;
-            this.adjustSizesButton.Click += AdjustSizesButton_Click;
-            this.FormClosing += MainForm_FormClosing;
+        }
+
+        private void CheckSizeAccordanceButton_Click(object sender, EventArgs e)
+        {
+            solidWorksHelper.CheckSizeAccordance();
         }
 
         private void RunSolidWorksButton_Click(object sender, EventArgs e)
@@ -62,5 +70,7 @@ namespace FunnyMacros
         {
             solidWorksHelper.Close();
         }
+
+      
     }
 }

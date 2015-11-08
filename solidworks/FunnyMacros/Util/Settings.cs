@@ -6,7 +6,7 @@
         public const string HOME_PATH = @"d:\!current-tasks\course-projects";
         public const string ASSEMBLY_NAME = "assembly.sldasm";
         public const string CORPUS_NAME = "corpus.sldprt";
-        public const string SHAFT_NAME = "shaft.sldprt";
+        public const string SHAFT_NAME = "shaft-small.sldprt";
         public const string PLACE_LOCATOR_NAME = "plane-locator.sldprt";
         public const string CYLINDER_LOCATOR_NAME_1 = "cylinder-locator-1.sldprt";
         public const string CYLINDER_LOCATOR_NAME_2 = "cylinder-locator-2.sldprt";

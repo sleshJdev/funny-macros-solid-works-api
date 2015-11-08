@@ -162,7 +162,7 @@ namespace FunnyMacros.Util
 
         public bool Equal(double delta)
         {
-            return Math.Abs(delta) < 0.15/*precision*/;
+            return Math.Abs(delta) < 0.2/*precision*/;
         }
 
         public IMathVector Negative(IMathVector origin)

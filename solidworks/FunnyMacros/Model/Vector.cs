@@ -42,7 +42,7 @@ namespace FunnyMacros.Model
 
         public override string ToString()
         {
-            return string.Format("<{0}>", string.Join(" | ", Coordinates), string.Empty);
+            return string.Format("Vector <{0}>", string.Join(" | ", Coordinates), string.Empty);
         }
     }
 }

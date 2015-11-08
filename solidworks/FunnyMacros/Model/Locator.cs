@@ -11,10 +11,25 @@ namespace FunnyMacros.Model
         }
 
         public IModelDoc2 Model { set; get; }
-        public IEquationMgr EquationManager { get { return Model.GetEquationMgr(); } }
+        public IEquationMgr EquationManager
+        {
+            get { return Model.GetEquationMgr(); }
+        }
         
-        public IFace2 BottomFace { get { return FindVecticalExtremeFaceWithNormal(-1); } }
-        public IFace2 TopFace { get { return FindVecticalExtremeFaceWithNormal(1); } }
+        public IFace2 BottomFace
+        {
+            get { return FindVecticalExtremeFaceWithNormal(-1); }
+        }
+
+        public IFace2 TopFace
+        {
+            get { return FindVecticalExtremeFaceWithNormal(1); }
+        }
+
+        public void Scale(short type, bool uniform, double factorX, double factorY, double factorZ)
+        {
+            Model.FeatureManager.InsertScale(type, uniform, factorX, factorY, factorZ);
+        }
 
         private IFace2 FindVecticalExtremeFaceWithNormal(int direction)
         {

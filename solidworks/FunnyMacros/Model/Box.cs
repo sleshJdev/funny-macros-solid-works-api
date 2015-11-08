@@ -12,6 +12,7 @@ namespace FunnyMacros.Model
         public Box() : this(new double[6])
         {
         }
+
         public Box(double[] coordinatesCorners)
         {
             if (coordinatesCorners == null)
@@ -28,6 +29,11 @@ namespace FunnyMacros.Model
         }
 
         public double[] CoordinatesCorners { get; set; }
+
+        public double Volume
+        {
+            get { return Math.Abs(Xmax - Xmin) * Math.Abs(Ymax - Ymin) * Math.Abs(Zmax - Zmin); }
+        }
 
         public double Xmin
         {
@@ -62,6 +68,11 @@ namespace FunnyMacros.Model
         {
             get { return CoordinatesCorners[5]; }
             set { CoordinatesCorners[5] = value; }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Box <{0}>, volume: {1}", string.Join(" | ", CoordinatesCorners), Volume);
         }
     }
 }

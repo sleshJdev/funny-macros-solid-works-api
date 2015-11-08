@@ -111,6 +111,29 @@ namespace FunnyMacros.Util
             document.EditRebuild3();
         }
 
+        public void CheckSizeAccordance()
+        {
+            Box box0 = shaft.LBox;
+            Box box1 = planeLocator.LBox;
+            Box box2 = cylinderLocator1.LBox;
+            Box box3 = cylinderLocator2.LBox;
+
+            Debug.WriteLine("box0: {0}\nbox1: {1}\nbox2: {2}\nbox3: {3}", box0, box1, box2, box3);
+
+            double f1 = box0.Volume < box1.Volume ? box0.Volume / box1.Volume : box1.Volume / box0.Volume;
+            double f2 = box0.Volume < box2.Volume ? box0.Volume / box2.Volume : box2.Volume / box0.Volume;
+            double f3 = box0.Volume < box3.Volume ? box0.Volume / box3.Volume : box3.Volume / box0.Volume;
+
+            Debug.WriteLine("f1: {0}, f3: {1}, f3: {2}", f1, f2, f3);
+            //f1: 0.0226875000000014, f3: 0.205437238113192, f3: 0.205437238113192
+            //0.181500000000012, f3: 0.608458335733309, f3: 0.608458335733309
+            planeLocator.Scale((short)swScaleType_e.swScaleAboutCentroid, true, f1, f1, f1);
+            cylinderLocator1.Scale((short)swScaleType_e.swScaleAboutCentroid, true, f2, f2, f2);
+            cylinderLocator2.Scale((short)swScaleType_e.swScaleAboutCentroid, true, f3, f3, f3);
+
+            Rebuild();
+        }
+
         public void AlignAllWithHorizont()
         {
             //conjugation with the horizontal plane
@@ -208,7 +231,7 @@ namespace FunnyMacros.Util
             i = 4; boundingBox.Ymax = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i], boxes[3].CoordinatesCorners[i] }.Max();
             i = 5; boundingBox.Zmax = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i], boxes[3].CoordinatesCorners[i] }.Max();
 
-            int width = Convert.ToInt32(1000.0 * (boundingBox.Zmax - boundingBox.Zmin)) + 50;
+            int width  = Convert.ToInt32(1000.0 * (boundingBox.Zmax - boundingBox.Zmin)) + 50;
             int length = Convert.ToInt32(1000.0 * (boundingBox.Xmax - boundingBox.Xmin)) + 50;
 
             helper.SetParameter(corpus.EquationManager, Settings.PARAMETER_CORPUS_WIDTH, width.ToString());

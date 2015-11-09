@@ -50,7 +50,7 @@
             // 
             // addMateButton
             // 
-            this.addMateButton.Location = new System.Drawing.Point(12, 120);
+            this.addMateButton.Location = new System.Drawing.Point(12, 151);
             this.addMateButton.Name = "addMateButton";
             this.addMateButton.Size = new System.Drawing.Size(187, 25);
             this.addMateButton.TabIndex = 1;
@@ -60,7 +60,7 @@
             // 
             // processSelectionButton
             // 
-            this.processSelectionButton.Location = new System.Drawing.Point(12, 92);
+            this.processSelectionButton.Location = new System.Drawing.Point(12, 120);
             this.processSelectionButton.Name = "processSelectionButton";
             this.processSelectionButton.Size = new System.Drawing.Size(187, 25);
             this.processSelectionButton.TabIndex = 3;
@@ -70,7 +70,7 @@
             // 
             // alignWithHorizontal
             // 
-            this.alignWithHorizontal.Location = new System.Drawing.Point(12, 151);
+            this.alignWithHorizontal.Location = new System.Drawing.Point(12, 89);
             this.alignWithHorizontal.Name = "alignWithHorizontal";
             this.alignWithHorizontal.Size = new System.Drawing.Size(187, 25);
             this.alignWithHorizontal.TabIndex = 4;
@@ -122,7 +122,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(209, 287);
+            this.ClientSize = new System.Drawing.Size(209, 312);
             this.Controls.Add(this.checkSizeAccordanceButton);
             this.Controls.Add(this.adjustSizesButton);
             this.Controls.Add(this.setupCorpusButton);
@@ -132,7 +132,7 @@
             this.Controls.Add(this.addMateButton);
             this.Controls.Add(this.runSwButton);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(225, 325);
+            this.MaximumSize = new System.Drawing.Size(225, 350);
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(225, 325);
             this.Name = "MainForm";

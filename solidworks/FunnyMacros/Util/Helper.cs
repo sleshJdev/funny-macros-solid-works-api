@@ -28,41 +28,6 @@ namespace FunnyMacros.Util
             return Instance;
         }
 
-        public void SetParameter(IEquationMgr manager, string property, string value)
-        {
-            for (int i = 0; i < manager.GetCount(); ++i)
-            {
-                string equation = manager.Equation[i];
-                if (equation.Contains(property))
-                {
-                    string newEquation = new Regex(@"=\s*(\d*)").Replace(equation, (m) => { return string.Format("={0}", value); }, 1);
-                    manager.Delete(i);
-                    manager.Add2(i, newEquation, true);
-                    Debug.WriteLine("replace equation {0} on {1} ... done!", equation, newEquation);
-                    return;
-                }
-            }
-        }
-
-        public string GetParameter(IEquationMgr manager, string property)
-        {
-            for (int i = 0; i < manager.GetCount(); ++i)
-            {
-                string equation = manager.Equation[i];
-                if (equation.Contains(property))
-                {
-                    Match match = new Regex(@"=\s*(\d*)").Match(equation);
-                    if (match.Success)
-                    {
-                        Debug.WriteLine("get value {0} for property {1} ... done!", match.Groups[1].Value, property);
-                        return match.Groups[1].Value;
-                    }
-                }
-            }
-
-            return null;
-        }
-
         public void FindRemovalFace(IFace2[] faces, IFace2 fromFace, out IFace2 removalFace, out double distance)
         {
             distance = 0.0;

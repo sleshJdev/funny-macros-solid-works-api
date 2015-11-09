@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
-using FunnyMacros.Util;
-using System.Drawing;
-using System.Diagnostics;
+using FunnyMacros.Macros;
 
 namespace FunnyMacros
 {
@@ -22,7 +20,6 @@ namespace FunnyMacros
             addMateButton.Click             += AddMateButton_Click;
             adjustSizesButton.Click         += AdjustSizesButton_Click;
             FormClosing                     += MainForm_FormClosing;
-            solidWorksHelper.Close();
         }
 
         private void CheckSizeAccordanceButton_Click(object sender, EventArgs e)
@@ -68,9 +65,7 @@ namespace FunnyMacros
 
         private void MainForm_FormClosing(object sender, EventArgs e)
         {
-            solidWorksHelper.Close();
+            //solidWorksHelper.Close();
         }
-
-      
     }
 }

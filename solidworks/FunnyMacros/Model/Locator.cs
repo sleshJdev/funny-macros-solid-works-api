@@ -1,5 +1,7 @@
 ﻿using SolidWorks.Interop.sldworks;
 using FunnyMacros.Util;
+using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace FunnyMacros.Model
 {
@@ -56,6 +58,41 @@ namespace FunnyMacros.Model
             }
 
             return extremeFace;
+        }
+
+        public void SetParameter(string property, string value)
+        {
+            for (int i = 0; i < EquationManager.GetCount(); ++i)
+            {
+                string equation = EquationManager.Equation[i];
+                if (equation.Contains(property))
+                {
+                    string newEquation = new Regex(@"=\s*(\d*)").Replace(equation, (m) => { return string.Format("={0}", value); }, 1);
+                    EquationManager.Delete(i);
+                    EquationManager.Add2(i, newEquation, true);
+                    Debug.WriteLine("replace equation {0} on {1} ... done!", equation, newEquation);
+                    return;
+                }
+            }
+        }
+
+        public string GetParameter(string property)
+        {
+            for (int i = 0; i < EquationManager.GetCount(); ++i)
+            {
+                string equation = EquationManager.Equation[i];
+                if (equation.Contains(property))
+                {
+                    Match match = new Regex(@"=\s*(\d*)").Match(equation);
+                    if (match.Success)
+                    {
+                        Debug.WriteLine("get value {0} for property {1} ... done!", match.Groups[1].Value, property);
+                        return match.Groups[1].Value;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

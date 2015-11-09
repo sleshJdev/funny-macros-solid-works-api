@@ -6,7 +6,6 @@ namespace FunnyMacros.Util
 {
     class Loader
     {
-
         //quantity of errors
         private static int qe;
 

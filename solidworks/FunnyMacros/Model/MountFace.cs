@@ -21,9 +21,9 @@ namespace FunnyMacros.Model
             get { return new Box(Helper.ApplyTransform(Transform, FaceLBox.CoordinatesCorners)); }
         }
 
-        public Vector CenterFaceGBox
+        public double Radius
         {
-            get { return Helper.CenterBox(FaceGBox); }
+            get { return Face.IGetSurface().CylinderParams[6]; }
         }
     }
 }

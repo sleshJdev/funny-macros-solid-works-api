@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FunnyMacros.Util;
+using System;
 
 namespace FunnyMacros.Model
 {
@@ -28,6 +29,11 @@ namespace FunnyMacros.Model
         public double Volume
         {
             get { return Math.Abs(Xmax - Xmin) * Math.Abs(Ymax - Ymin) * Math.Abs(Zmax - Zmin); }
+        }
+
+        public Vector Center
+        {
+            get { return Helper.Instance.CenterBox(CoordinatesCorners); }
         }
 
         public double Xmin

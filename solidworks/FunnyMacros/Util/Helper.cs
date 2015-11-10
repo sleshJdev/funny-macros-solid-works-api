@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
 using SolidWorks.Interop.sldworks;
 using FunnyMacros.Model;
 
@@ -24,7 +22,7 @@ namespace FunnyMacros.Util
             {
                 Instance = new Helper(mathUtility);
             }
-
+            
             return Instance;
         }
 
@@ -118,9 +116,9 @@ namespace FunnyMacros.Util
             double[] twoVector = twoN.ArrayData as double[];
             double[] difference = new double[3];
 
-            difference[0] = oneVector[0] - twoVector[0];
-            difference[1] = oneVector[1] - twoVector[1];
-            difference[2] = oneVector[2] - twoVector[2];
+            difference[0] = oneVector[0] * twoVector[0];
+            difference[1] = oneVector[1] * twoVector[1];
+            difference[2] = oneVector[2] * twoVector[2];
 
             return Equal(difference[0]) && Equal(difference[1]) && Equal(difference[2]);
         }
@@ -140,14 +138,19 @@ namespace FunnyMacros.Util
             return MathUtility.CreateVector(negativeVector);
         }
 
-        public Vector CenterBox(Box box)
+        public Vector CenterBox(double[] box)
         {
             return new Vector(new double[]
             {
-                    (box.Xmin + box.Xmax) / 2,
-                    (box.Ymin + box.Ymax) / 2,
-                    (box.Zmin + box.Zmax) / 2
+                    (box[0] + box[3]) / 2,
+                    (box[1] + box[4]) / 2,
+                    (box[2] + box[5]) / 2
             });
+        }
+
+        public Vector CenterBox(Box box)
+        {
+            return CenterBox(box.CoordinatesCorners);
         }
 
         public double[] ApplyTransform(IMathTransform transform, double[] vector)

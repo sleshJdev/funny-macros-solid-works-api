@@ -12,15 +12,21 @@ namespace FunnyMacros.Util
         //quantity of warnings
         private static int qw;
 
-        public static Loader Instance { get; set; }
-        public ISldWorks SolidWorks { get; set; }
-        public IAssemblyDoc Assembly { get; set; }
+        public static Loader Instance { get; private set; }
+        public ISldWorks SolidWorks { get; private set; }
+        public IAssemblyDoc Assembly { get; private set; }
 
-        public static Loader Initialize()
+        public Loader(ISldWorks solidWorks, IAssemblyDoc assembly)
+        {
+            SolidWorks = solidWorks;
+            Assembly = assembly;
+        }
+
+        public static Loader Initialize(ISldWorks solidWorks, IAssemblyDoc assembly)
         {
             if (Instance == null)
             {
-                Instance = new Loader();
+                Instance = new Loader(solidWorks, assembly);
             }
 
             return Instance;

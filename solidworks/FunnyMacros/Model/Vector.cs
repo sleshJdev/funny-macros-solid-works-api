@@ -4,6 +4,10 @@ namespace FunnyMacros.Model
 {
     class Vector
     {
+        public Vector() : this(0.0, 0.0, 0.0)
+        {
+        }
+
         public Vector(double x, double y, double z) 
         {
             X = x;

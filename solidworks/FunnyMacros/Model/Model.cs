@@ -40,16 +40,6 @@ namespace FunnyMacros.Model
             get { return new Box(Helper.ApplyTransform(Transform, LBox.CoordinatesCorners)); }
         }
 
-        public Vector CenterLBox
-        {
-            get { return Helper.CenterBox(LBox); }
-        }
-
-        public Vector CenterGBox
-        {
-            get { return Helper.CenterBox(GBox); }
-        }
-        
         public MathTransform Transform
         {
             get { return Component.Transform2; }

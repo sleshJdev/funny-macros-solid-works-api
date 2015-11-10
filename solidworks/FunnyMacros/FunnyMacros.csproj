@@ -66,10 +66,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainForm.cs">
+    <Compile Include="View\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
+    <Compile Include="View\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\Box.cs" />
@@ -81,12 +81,13 @@
     <Compile Include="Model\Locator.cs" />
     <Compile Include="Model\RemovaPairlFaces.cs" />
     <Compile Include="Util\Drawer.cs" />
+    <Compile Include="View\InputDialog.cs" />
     <Compile Include="Util\Loader.cs" />
     <Compile Include="Util\Mounter.cs" />
     <Compile Include="Util\Settings.cs" />
     <Compile Include="Macros\SolidWorksMacro.cs" />
     <Compile Include="Util\Helper.cs" />
-    <EmbeddedResource Include="MainForm.resx">
+    <EmbeddedResource Include="View\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

@@ -2,6 +2,7 @@
 using FunnyMacros.Util;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System;
 
 namespace FunnyMacros.Model
 {
@@ -11,7 +12,12 @@ namespace FunnyMacros.Model
         {
         }
 
-        public IModelDoc2 Model { set; get; }
+        public string FullPath { get; set;}
+
+        public IModelDoc2 Model
+        {
+            get { return Component.GetModelDoc2(); }
+        }
         public IEquationMgr EquationManager
         {
             get { return Model.GetEquationMgr(); }
@@ -32,6 +38,14 @@ namespace FunnyMacros.Model
             Model.FeatureManager.InsertScale(type, uniform, factorX, factorY, factorZ);
         }
 
+        private bool IsHorizontal(IMathVector normal)
+        {
+            double[] normalVecor = normal.ArrayData;
+            return Math.Abs(normalVecor[1]) > Math.Abs(normalVecor[0]) &&
+                   Math.Abs(normalVecor[1]) > Math.Abs(normalVecor[2]) &&
+                   Math.Abs(normalVecor[1]) > 0.5;
+        }
+
         private IFace2 FindVecticalExtremeFaceWithNormal(int direction)
         {
             IFace2 extremeFace = null;
@@ -44,10 +58,9 @@ namespace FunnyMacros.Model
                 {
                     double[] normal = Helper.Instance.ApplyTransform(Transform, face.Normal);
                     IMathVector normalVector = MathUtility.CreateVector(normal);
-                    if (Helper.IsCoDirectional(normalVector, targetNormalVector) ||
-                        Helper.IsCoDirectional(Helper.Negative(normalVector), targetNormalVector))
+                    if (IsHorizontal(normalVector) || IsHorizontal(Helper.Negative(normalVector)))
                     {
-                        Vector center = Helper.CenterBox(new Box(face.GetBox()));
+                        Vector center = new Box(Helper.ApplyTransform(Transform, face.GetBox())).Center;
                         if (direction == 1 ? center.Y > extreme.Y : center.Y < extreme.Y)
                         {
                             extreme.Y = center.Y;
@@ -60,14 +73,14 @@ namespace FunnyMacros.Model
             return extremeFace;
         }
 
-        public void SetParameter(string property, string value)
+        public void SetParameter(string property, object value)
         {
             for (int i = 0; i < EquationManager.GetCount(); ++i)
             {
                 string equation = EquationManager.Equation[i];
                 if (equation.Contains(property))
                 {
-                    string newEquation = new Regex(@"=\s*(\d*)").Replace(equation, (m) => { return string.Format("={0}", value); }, 1);
+                    string newEquation = new Regex(@"=\s*(\d*)").Replace(equation, (m) => { return string.Format("={0}", value.ToString()); }, 1);
                     EquationManager.Delete(i);
                     EquationManager.Add2(i, newEquation, true);
                     Debug.WriteLine("replace equation {0} on {1} ... done!", equation, newEquation);

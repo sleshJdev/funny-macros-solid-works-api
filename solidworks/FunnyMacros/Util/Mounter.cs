@@ -14,7 +14,7 @@ namespace FunnyMacros.Util
             Assembly = document as IAssemblyDoc;
         }
 
-        public static Mounter Instance { get; set; }
+        public static Mounter Instance { get; private set; }
         private IAssemblyDoc Assembly { get; set; }
         private IModelDoc2 Document { get; set; }
 

@@ -9,7 +9,6 @@ using FunnyMacros.Util;
 namespace FunnyMacros.Macros
 {
     public delegate void ShowInputDialog(string title, string promptText, ref string value);
-
     public class SolidWorksMacro
     {
         //quantity of errors
@@ -53,14 +52,14 @@ namespace FunnyMacros.Macros
             this.showInputDialog = showInputDialog;
         }
 
-        public void Run()
+        public bool Run()
         {
             if (Initalize())
             {
                 if (DoProcessSelection())
                 {
-                    //try
-                    //{
+                    try
+                    {
                         LoadLocators();
                         AddMate();
                         SetupLocatorsSize();
@@ -68,14 +67,17 @@ namespace FunnyMacros.Macros
                         LoadCorpus();
                         SetupCorpus();
                         SetupCorpusSize();
-                    //}
-                    //catch(Exception e)
-                    //{
-                    //    ShowMessage(e.Message);
-                    //}
+                    }
+                    catch (Exception e)
+                    {
+                        ShowMessage(e.Message);
+                        return false;
+                    }
                     ResetState();
+                    return true;
                 };
             };
+            return false;
         }
 
         private bool Initalize()

@@ -19,16 +19,46 @@ namespace FunnyMacros.View
             Icon = icon;
             icon.Dispose();
 
+            runButton.BackColor = SystemColors.ActiveCaption;
+            runButton.FlatAppearance.MouseOverBackColor = runButton.BackColor;
+            runButton.BackColorChanged += (s, e) =>
+            {
+                runButton.FlatAppearance.MouseOverBackColor = runButton.BackColor;
+            };
             runButton.Click += (s, e) =>
             {
-                ISldWorks solidWorks = Marshal.GetActiveObject("SldWorks.Application") as ISldWorks;
-                if (solidWorks != null)
+                Color normal = SystemColors.ActiveCaption;
+                Color success = ColorTranslator.FromHtml("#4F8A10");
+                Color error = ColorTranslator.FromHtml("#D8000C");
+                SolidWorksMacro macro = null;
+                try
                 {
-                    new SolidWorksMacro(solidWorks, InputDialog.Show).Run();
+                    object activeObject = Marshal.GetActiveObject("SldWorks.Application");
+                    if (activeObject != null)
+                    {
+                        ISldWorks solidWorks = activeObject as ISldWorks;
+                        if (solidWorks != null)
+                        {
+                            runButton.BackColor = success;
+                            macro = new SolidWorksMacro(solidWorks, InputDialog.Show);
+                            if (macro.Run())
+                            {
+                                runButton.BackColor = normal;
+                            }
+                            else
+                            {
+                                runButton.BackColor = error;
+                            }
+                        }
+                    }
                 }
-                else
+                catch
                 {
-                    MessageBox.Show("Please sure Solid Works is running", "Solid Works Not Runnning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                if (macro == null)
+                {
+                    runButton.BackColor = error;
+                    MessageBox.Show("Please make sure Solid Works has been started", "Solid Works Not Runnning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             };
         }

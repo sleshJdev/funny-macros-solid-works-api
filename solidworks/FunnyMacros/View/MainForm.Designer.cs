@@ -34,13 +34,20 @@
             // 
             // runButton
             // 
+            this.runButton.BackColor = System.Drawing.SystemColors.Control;
+            this.runButton.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.runButton.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.runButton.FlatAppearance.BorderColor = System.Drawing.SystemColors.Control;
+            this.runButton.FlatAppearance.MouseDownBackColor = System.Drawing.SystemColors.Control;
+            this.runButton.FlatAppearance.MouseOverBackColor = System.Drawing.SystemColors.Control;
+            this.runButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.runButton.Image = ((System.Drawing.Image)(resources.GetObject("runButton.Image")));
-            this.runButton.Location = new System.Drawing.Point(12, 12);
+            this.runButton.Location = new System.Drawing.Point(-10, -9);
             this.runButton.Name = "runButton";
-            this.runButton.Size = new System.Drawing.Size(125, 103);
+            this.runButton.Size = new System.Drawing.Size(168, 145);
             this.runButton.TabIndex = 3;
             this.runButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.runButton.UseVisualStyleBackColor = true;
+            this.runButton.UseVisualStyleBackColor = false;
             // 
             // MainForm
             // 
@@ -56,6 +63,7 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Funny Macros";
+            this.TopMost = true;
             this.ResumeLayout(false);
 
         }

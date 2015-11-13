@@ -66,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Macros\Property.cs" />
     <Compile Include="View\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -84,7 +85,6 @@
     <Compile Include="View\InputDialog.cs" />
     <Compile Include="Util\Loader.cs" />
     <Compile Include="Util\Mounter.cs" />
-    <Compile Include="Util\Settings.cs" />
     <Compile Include="Macros\SolidWorksMacro.cs" />
     <Compile Include="Util\Helper.cs" />
     <EmbeddedResource Include="View\MainForm.resx">

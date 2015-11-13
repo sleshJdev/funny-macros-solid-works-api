@@ -4,6 +4,9 @@ using FunnyMacros.Macros;
 using System.Drawing;
 using SolidWorks.Interop.sldworks;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
+using System.IO;
+using System.Collections.Generic;
 
 namespace FunnyMacros.View
 {
@@ -18,6 +21,17 @@ namespace FunnyMacros.View
             Icon icon = Icon.FromHandle(pointerIcon);
             Icon = icon;
             icon.Dispose();
+
+            Debug.WriteLine("read properties...");
+            IDictionary<Property, string> configuration = new Dictionary<Property, string>();
+            foreach (string line in File.ReadAllLines("resources/configuration.properties"))
+            {
+                string[] pairKeyValue = line.Split('=');
+                Property parameter = (Property)Enum.Parse(typeof(Property), pairKeyValue[0].Trim());
+                string value = pairKeyValue[1].Trim();
+                configuration[parameter] = value;
+                Debug.WriteLine("{0} = {1}", parameter, value);
+            }
 
             runButton.BackColor = SystemColors.ActiveCaption;
             runButton.FlatAppearance.MouseOverBackColor = runButton.BackColor;
@@ -40,7 +54,7 @@ namespace FunnyMacros.View
                         if (solidWorks != null)
                         {
                             runButton.BackColor = success;
-                            macro = new SolidWorksMacro(solidWorks, InputDialog.Show);
+                            macro = new SolidWorksMacro(solidWorks, InputDialog.Show, configuration);
                             if (macro.Run())
                             {
                                 runButton.BackColor = normal;

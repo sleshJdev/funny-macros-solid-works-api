@@ -5,12 +5,16 @@ using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using FunnyMacros.Model;
 using FunnyMacros.Util;
+using System.Collections.Generic;
 
 namespace FunnyMacros.Macros
 {
     public delegate void ShowInputDialog(string title, string promptText, ref string value);
     public class SolidWorksMacro
     {
+        private static string TOP_PLANE_NAME_EN = "Top";
+        private static string TOP_PLANE_NAME_RU = "Сверху";
+
         //quantity of errors
         private static int qe;
 
@@ -21,6 +25,9 @@ namespace FunnyMacros.Macros
         private Helper helper;
         private Loader loader;
         private Mounter mounter;
+
+        //propertie: names of parameters of components, references planes
+        private IDictionary<Property, string> configuration;
 
         //solidworks application instance
         public ISldWorks solidWorks;
@@ -46,10 +53,11 @@ namespace FunnyMacros.Macros
         private Locator cylinderLocator1;
         private Locator cylinderLocator2;
 
-        public SolidWorksMacro(ISldWorks solidWorks, ShowInputDialog showInputDialog)
+        public SolidWorksMacro(ISldWorks solidWorks, ShowInputDialog showInputDialog, IDictionary<Property, string> configuration)
         {
             this.solidWorks = solidWorks;
             this.showInputDialog = showInputDialog;
+            this.configuration = configuration;
         }
 
         public bool Run()
@@ -82,13 +90,12 @@ namespace FunnyMacros.Macros
 
         private bool Initalize()
         {
-            IMathUtility mathutility = solidWorks.IGetMathUtility();
-            helper  = Helper.Initialize(mathutility);
-            corpus  = new Locator(mathutility);
-            shaft   = new Locator(mathutility);
-            planeLocator        = new Locator(mathutility);
-            cylinderLocator1    = new Locator(mathutility);
-            cylinderLocator2    = new Locator(mathutility);
+            helper      = Helper.Initialize(solidWorks.IGetMathUtility());
+            corpus      = new Locator(solidWorks.IGetMathUtility());
+            shaft       = new Locator(solidWorks.IGetMathUtility());
+            planeLocator        = new Locator(solidWorks.IGetMathUtility());
+            cylinderLocator1    = new Locator(solidWorks.IGetMathUtility());
+            cylinderLocator2    = new Locator(solidWorks.IGetMathUtility());
 
             document = solidWorks.ActiveDoc as IModelDoc2;
             assembly = document as IAssemblyDoc;
@@ -99,14 +106,14 @@ namespace FunnyMacros.Macros
                 return false;
             }
 
-            horizont = assembly.IFeatureByName(Settings.TOP_PLANE_NAME_RU);
-            horizont = horizont == null ? assembly.IFeatureByName(Settings.TOP_PLANE_NAME_EN) : horizont;
+            horizont = assembly.IFeatureByName(TOP_PLANE_NAME_EN);
+            horizont = horizont == null ? assembly.IFeatureByName(TOP_PLANE_NAME_RU) : horizont;
             loader = Loader.Initialize(solidWorks, assembly);
             mounter = Mounter.Initialize(document);
             Debug.WriteLine("loading of assembly ... done!");
 
-            string shaftTitle = null;
-            showInputDialog("Name of detail...", "Name of the mountable detail:", ref shaftTitle);
+            string shaftTitle = configuration[Property.MAIN_DETAIL_NAME];
+            //showInputDialog("Name of detail...", "Name of the mountable detail:", ref shaftTitle);
             object[] components = assembly.GetComponents(true);
             foreach(IComponent2 component in components)
             {
@@ -215,7 +222,7 @@ namespace FunnyMacros.Macros
 
         private void AddMate()
         {
-            IFeature feature = planeLocator.Component.FeatureByName(Settings.MOUNTING_PLANE_NAME);
+            IFeature feature = planeLocator.Component.FeatureByName(configuration[Property.MOUNTING_PLANE_NAME]);
             mounter.AddMate(feature, planeBase.Face, (int)swMateType_e.swMateCOINCIDENT, (int)swMateAlign_e.swAlignSAME);
             Debug.WriteLine("mate for plane base  with shaft ... done!");
 
@@ -231,9 +238,9 @@ namespace FunnyMacros.Macros
         {
             Box box = planeBase.FaceLBox;
             double width = Math.Max(box.Xmax - box.Xmin, box.Zmax - box.Zmin);
-            planeLocator.SetParameter(Settings.PARAMETER_PLANE_LOCATOR_WIDTH, Convert.ToInt32(500.0 * width));
-            cylinderLocator1.SetParameter(Settings.PARAMETER_CYLINDER_LOCATOR_DIAMETER, Convert.ToInt32(2000.0 * cylinderBase1.Radius));
-            cylinderLocator2.SetParameter(Settings.PARAMETER_CYLINDER_LOCATOR_DIAMETER, Convert.ToInt32(2000.0 * cylinderBase2.Radius));
+            planeLocator.SetParameter(configuration[Property.PARAMETER_PLANE_LOCATOR_WIDTH], Convert.ToInt32(500.0 * width));
+            cylinderLocator1.SetParameter(configuration[Property.PARAMETER_CYLINDER_LOCATOR_DIAMETER], Convert.ToInt32(2000.0 * cylinderBase1.Radius));
+            cylinderLocator2.SetParameter(configuration[Property.PARAMETER_CYLINDER_LOCATOR_DIAMETER], Convert.ToInt32(2000.0 * cylinderBase2.Radius));
 
             Rebuild();
             Debug.WriteLine("setup location size ... done!");
@@ -295,13 +302,13 @@ namespace FunnyMacros.Macros
             Box boxTopFaceCorpus = new Box(helper.ApplyTransform(corpus.Transform, topFaceOfCorpus.GetBox()));
 
             delta = Math.Abs(1000.0 * (boxLowestFaceDanglingLocator.Ymin - boxTopFaceCorpus.Ymin));
-            value = delta + Convert.ToDouble(danglingLocator.GetParameter(Settings.PARAMETER_CYLINDER_LOCATOR_HEIGHT));
-            danglingLocator.SetParameter(Settings.PARAMETER_CYLINDER_LOCATOR_HEIGHT, Convert.ToInt32(value).ToString());
+            value = delta + Convert.ToDouble(danglingLocator.GetParameter(configuration[Property.PARAMETER_CYLINDER_LOCATOR_HEIGHT]));
+            danglingLocator.SetParameter(configuration[Property.PARAMETER_CYLINDER_LOCATOR_HEIGHT], Convert.ToInt32(value).ToString());
             Debug.WriteLine("extension of the dangling locator, delta: {0}mm, value: {1} ... done!", delta, Convert.ToInt32(value));
 
             delta = Math.Abs(1000.0 * (planeBase.FaceGBox.Ymax - planeLocator.LBox.Ymax));
-            value = Convert.ToDouble(planeLocator.GetParameter(Settings.PARAMETER_PLANE_LOCATOR_HEIGHT)) + delta;
-            planeLocator.SetParameter(Settings.PARAMETER_PLANE_LOCATOR_HEIGHT, Convert.ToInt32(value).ToString());
+            value = Convert.ToDouble(planeLocator.GetParameter(configuration[Property.PARAMETER_PLANE_LOCATOR_HEIGHT])) + delta;
+            planeLocator.SetParameter(configuration[Property.PARAMETER_PLANE_LOCATOR_HEIGHT], Convert.ToInt32(value).ToString());
             Debug.WriteLine("extension of the plane locator, delta {0}mm, value: {1}mm ... done!", delta, Convert.ToInt32(value));
 
             Rebuild();
@@ -333,23 +340,23 @@ namespace FunnyMacros.Macros
             };
 
             corpus.Translate(newLocation);
-            corpus.SetParameter(Settings.PARAMETER_CORPUS_WIDTH, size.ToString());
-            corpus.SetParameter(Settings.PARAMETER_CORPUS_LENGTH, size.ToString());
+            corpus.SetParameter(configuration[Property.PARAMETER_CORPUS_WIDTH], size.ToString());
+            corpus.SetParameter(configuration[Property.PARAMETER_CORPUS_LENGTH], size.ToString());
 
             Rebuild();
         }
 
         private void AlignWithPlane(IComponent2 component, IFeature baseFace)
         {
-            IFeature face = component.FeatureByName(Settings.TOP_PLANE_NAME_RU);
-            face = face == null ? component.FeatureByName(Settings.TOP_PLANE_NAME_EN) : face;
+            IFeature face = component.FeatureByName(TOP_PLANE_NAME_RU);
+            face = face == null ? component.FeatureByName(TOP_PLANE_NAME_EN) : face;
             mounter.AddMate(baseFace, face, (int)swMateType_e.swMatePARALLEL, (int)swMateAlign_e.swAlignNONE);
         }
 
         private void AddMateCylinderLocator(IComponent2 cylinderLocator, IFace2 cylinderBase)
         {
-            IFeature firstFeature = cylinderLocator.FeatureByName(Settings.MOUNTING_CYLINDER_PLANE_NAME_1);
-            IFeature secondFeature = cylinderLocator.FeatureByName(Settings.MOUNTING_CYLINDER_PLANE_NAME_2);
+            IFeature firstFeature = cylinderLocator.FeatureByName(configuration[Property.MOUNTING_CYLINDER_PLANE_NAME_1]);
+            IFeature secondFeature = cylinderLocator.FeatureByName(configuration[Property.MOUNTING_CYLINDER_PLANE_NAME_2]);
 
             mounter.AddMate(firstFeature, cylinderBase, (int)swMateType_e.swMateTANGENT, (int)swMateAlign_e.swAlignSAME);
             mounter.AddMate(secondFeature, cylinderBase, (int)swMateType_e.swMateTANGENT, (int)swMateAlign_e.swAlignSAME);

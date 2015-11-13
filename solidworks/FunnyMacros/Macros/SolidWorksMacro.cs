@@ -18,9 +18,6 @@ namespace FunnyMacros.Macros
         //quantity of errors
         private static int qe;
 
-        //dialog to retrieve data from user
-        private ShowInputDialog showInputDialog;
-
         //utils
         private Helper helper;
         private Loader loader;
@@ -50,13 +47,12 @@ namespace FunnyMacros.Macros
 
         //locator for bases
         private Locator planeLocator;
-        private Locator cylinderLocator1;
-        private Locator cylinderLocator2;
+        private Locator prismLocator1;
+        private Locator prismLocator2;
 
-        public SolidWorksMacro(ISldWorks solidWorks, ShowInputDialog showInputDialog, IDictionary<Property, string> configuration)
+        public SolidWorksMacro(ISldWorks solidWorks, IDictionary<Property, string> configuration)
         {
             this.solidWorks = solidWorks;
-            this.showInputDialog = showInputDialog;
             this.configuration = configuration;
         }
 
@@ -82,6 +78,7 @@ namespace FunnyMacros.Macros
                         return false;
                     }
                     ResetState();
+                    ShowMessage("Well done!");
                     return true;
                 };
             };
@@ -94,8 +91,8 @@ namespace FunnyMacros.Macros
             corpus      = new Locator(solidWorks.IGetMathUtility());
             shaft       = new Locator(solidWorks.IGetMathUtility());
             planeLocator        = new Locator(solidWorks.IGetMathUtility());
-            cylinderLocator1    = new Locator(solidWorks.IGetMathUtility());
-            cylinderLocator2    = new Locator(solidWorks.IGetMathUtility());
+            prismLocator1    = new Locator(solidWorks.IGetMathUtility());
+            prismLocator2    = new Locator(solidWorks.IGetMathUtility());
 
             document = solidWorks.ActiveDoc as IModelDoc2;
             assembly = document as IAssemblyDoc;
@@ -112,12 +109,10 @@ namespace FunnyMacros.Macros
             mounter = Mounter.Initialize(document);
             Debug.WriteLine("loading of assembly ... done!");
 
-            string shaftTitle = configuration[Property.MAIN_DETAIL_NAME];
-            //showInputDialog("Name of detail...", "Name of the mountable detail:", ref shaftTitle);
             object[] components = assembly.GetComponents(true);
             foreach(IComponent2 component in components)
             {
-                if (component.Name2.Contains(shaftTitle))
+                if (component.Name2.Contains(configuration[Property.MAIN_DETAIL_NAME]))
                 {
                     shaft.Component = component;
                     Debug.WriteLine("shaft search ... done!");
@@ -189,22 +184,23 @@ namespace FunnyMacros.Macros
         {
             loader.LoadModel(planeLocator.FullPath = GetFile("Choose the plane locator..."));
             planeLocator.Component = loader.AddModelToAssembly(planeLocator.FullPath, 0.0, 0.0, 0.0);
+            Activate(document.GetTitle());
             Debug.WriteLine("loading plane locator ... done!");
 
-            loader.LoadModel(cylinderLocator1.FullPath = GetFile("Choose the first cylinder locator..."));
-            cylinderLocator1.Component = loader.AddModelToAssembly(cylinderLocator1.FullPath, 0.0, 0.0, 0.0);
+            loader.LoadModel(prismLocator1.FullPath = GetFile("Choose the first cylinder locator..."));
+            prismLocator1.Component = loader.AddModelToAssembly(prismLocator1.FullPath, 0.0, 0.0, 0.0);
+            Activate(document.GetTitle());
             Debug.WriteLine("loading cylinder 1 locator ... done!");
 
-            loader.LoadModel(cylinderLocator2.FullPath = GetFile("Choose the second cylinder locator..."));
-            cylinderLocator2.Component = loader.AddModelToAssembly(cylinderLocator2.FullPath, 0.0, 0.0, 0.0);
-            Debug.WriteLine("loading cylinder 2 locator ... done!");
-
+            loader.LoadModel(prismLocator2.FullPath = GetFile("Choose the second cylinder locator..."));
+            prismLocator2.Component = loader.AddModelToAssembly(prismLocator2.FullPath, 0.0, 0.0, 0.0);
             Activate(document.GetTitle());
+            Debug.WriteLine("loading cylinder 2 locator ... done!");
 
             ClearSelection();
             planeLocator.Component.Select4(true, null, false);
-            cylinderLocator1.Component.Select4(true, null, false);
-            cylinderLocator2.Component.Select4(true, null, false);
+            prismLocator1.Component.Select4(true, null, false);
+            prismLocator2.Component.Select4(true, null, false);
             assembly.UnfixComponent();
             Debug.WriteLine("unfix locators  ... done!");
 
@@ -215,8 +211,8 @@ namespace FunnyMacros.Macros
 
             AlignWithPlane(shaft.Component, horizont);
             AlignWithPlane(planeLocator.Component, horizont);
-            AlignWithPlane(cylinderLocator1.Component, horizont);
-            AlignWithPlane(cylinderLocator2.Component, horizont);
+            AlignWithPlane(prismLocator1.Component, horizont);
+            AlignWithPlane(prismLocator2.Component, horizont);
             Debug.WriteLine("align with horizont ... done!");
         }
 
@@ -226,8 +222,8 @@ namespace FunnyMacros.Macros
             mounter.AddMate(feature, planeBase.Face, (int)swMateType_e.swMateCOINCIDENT, (int)swMateAlign_e.swAlignSAME);
             Debug.WriteLine("mate for plane base  with shaft ... done!");
 
-            AddMateCylinderLocator(cylinderLocator1.Component, cylinderBase1.Face);
-            AddMateCylinderLocator(cylinderLocator2.Component, cylinderBase2.Face);
+            AddMateCylinderLocator(prismLocator1.Component, cylinderBase1.Face);
+            AddMateCylinderLocator(prismLocator2.Component, cylinderBase2.Face);
             Debug.WriteLine("cylinder bases mate with shaft ... done!");
 
             Rebuild();
@@ -239,8 +235,8 @@ namespace FunnyMacros.Macros
             Box box = planeBase.FaceLBox;
             double width = Math.Max(box.Xmax - box.Xmin, box.Zmax - box.Zmin);
             planeLocator.SetParameter(configuration[Property.PARAMETER_PLANE_LOCATOR_WIDTH], Convert.ToInt32(500.0 * width));
-            cylinderLocator1.SetParameter(configuration[Property.PARAMETER_CYLINDER_LOCATOR_DIAMETER], Convert.ToInt32(2000.0 * cylinderBase1.Radius));
-            cylinderLocator2.SetParameter(configuration[Property.PARAMETER_CYLINDER_LOCATOR_DIAMETER], Convert.ToInt32(2000.0 * cylinderBase2.Radius));
+            prismLocator1.SetParameter(configuration[Property.PARAMETER_CYLINDER_LOCATOR_DIAMETER], Convert.ToInt32(2000.0 * cylinderBase1.Radius));
+            prismLocator2.SetParameter(configuration[Property.PARAMETER_CYLINDER_LOCATOR_DIAMETER], Convert.ToInt32(2000.0 * cylinderBase2.Radius));
 
             Rebuild();
             Debug.WriteLine("setup location size ... done!");
@@ -249,8 +245,8 @@ namespace FunnyMacros.Macros
         private void SetupLocatorsLocation()
         {
             planeLocator.Translate(planeBase.FaceGBox.Center);
-            cylinderLocator1.Translate(cylinderBase1.FaceGBox.Center);
-            cylinderLocator2.Translate(cylinderBase2.FaceGBox.Center);
+            prismLocator1.Translate(cylinderBase1.FaceGBox.Center);
+            prismLocator2.Translate(cylinderBase2.FaceGBox.Center);
             Rebuild();
             Debug.WriteLine("align with shaft ... done!");
         }
@@ -268,12 +264,14 @@ namespace FunnyMacros.Macros
             corpus.Component.Select4(true, null, false);
             assembly.UnfixComponent();
             Debug.WriteLine("unfix corpus  ... done!");
+
+            Activate(document.GetTitle());
         }
 
         private void SetupCorpus()
         {
-            IFace2 face1 = cylinderLocator1.BottomFace;
-            IFace2 face2 = cylinderLocator2.BottomFace;
+            IFace2 face1 = prismLocator1.BottomFace;
+            IFace2 face2 = prismLocator2.BottomFace;
             (face1 as Entity).Select4(true, null);
             (face2 as Entity).Select4(true, null);
             IFace2 lowestFace = null;
@@ -281,12 +279,12 @@ namespace FunnyMacros.Macros
             if (helper.CenterBox(face1.GetBox()).Y < helper.CenterBox(face2.GetBox()).Y)
             {
                 lowestFace = face1;
-                danglingLocator = cylinderLocator2;
+                danglingLocator = prismLocator2;
             }
             else
             {
                 lowestFace = face2;
-                danglingLocator = cylinderLocator1;
+                danglingLocator = prismLocator1;
             }
             Debug.WriteLine("dangling locator search ... done!");
 
@@ -319,14 +317,14 @@ namespace FunnyMacros.Macros
         public void SetupCorpusSize()
         {
             int i;
-            Box[] boxes = { shaft.LBox, planeLocator.LBox, cylinderLocator1.LBox, cylinderLocator2.LBox };
+            Box[] boxes = { planeLocator.LBox, prismLocator1.LBox, prismLocator2.LBox };
             Box boundingBox = new Box();
-            i = 0; boundingBox.Xmin = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i], boxes[3].CoordinatesCorners[i] }.Min();
-            i = 1; boundingBox.Ymin = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i], boxes[3].CoordinatesCorners[i] }.Min();
-            i = 2; boundingBox.Zmin = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i], boxes[3].CoordinatesCorners[i] }.Min();
-            i = 3; boundingBox.Xmax = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i], boxes[3].CoordinatesCorners[i] }.Max();
-            i = 4; boundingBox.Ymax = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i], boxes[3].CoordinatesCorners[i] }.Max();
-            i = 5; boundingBox.Zmax = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i], boxes[3].CoordinatesCorners[i] }.Max();
+            i = 0; boundingBox.Xmin = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i] }.Min();
+            i = 1; boundingBox.Ymin = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i] }.Min();
+            i = 2; boundingBox.Zmin = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i] }.Min();
+            i = 3; boundingBox.Xmax = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i] }.Max();
+            i = 4; boundingBox.Ymax = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i] }.Max();
+            i = 5; boundingBox.Zmax = new double[] { boxes[0].CoordinatesCorners[i], boxes[1].CoordinatesCorners[i], boxes[2].CoordinatesCorners[i] }.Max();
 
             int width = Convert.ToInt32(1000.0 * (boundingBox.Zmax - boundingBox.Zmin));
             int length = Convert.ToInt32(1000.0 * (boundingBox.Xmax - boundingBox.Xmin));
@@ -376,7 +374,7 @@ namespace FunnyMacros.Macros
         private void ResetState()
         {
             planeBase = cylinderBase1 = cylinderBase2 = null;
-            planeLocator = cylinderLocator1 = cylinderLocator2 = null;
+            planeLocator = prismLocator1 = prismLocator2 = null;
             corpus = null;
             shaft = null;
             horizont = null;

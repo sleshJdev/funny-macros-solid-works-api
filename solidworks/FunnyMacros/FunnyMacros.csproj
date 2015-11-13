@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>FunnyMacros</RootNamespace>
     <AssemblyName>FunnyMacros</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -82,7 +83,6 @@
     <Compile Include="Model\Locator.cs" />
     <Compile Include="Model\RemovaPairlFaces.cs" />
     <Compile Include="Util\Drawer.cs" />
-    <Compile Include="View\InputDialog.cs" />
     <Compile Include="Util\Loader.cs" />
     <Compile Include="Util\Mounter.cs" />
     <Compile Include="Macros\SolidWorksMacro.cs" />

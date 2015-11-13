@@ -54,7 +54,7 @@ namespace FunnyMacros.View
                         if (solidWorks != null)
                         {
                             runButton.BackColor = success;
-                            macro = new SolidWorksMacro(solidWorks, InputDialog.Show, configuration);
+                            macro = new SolidWorksMacro(solidWorks, configuration);
                             if (macro.Run())
                             {
                                 runButton.BackColor = normal;

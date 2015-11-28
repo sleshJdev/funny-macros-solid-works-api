@@ -54,7 +54,7 @@ namespace FunnyMacros.Macros
         {
             this.solidWorks = solidWorks;
             this.configuration = configuration;
-        }
+        }       
 
         public bool Run()
         {
@@ -90,7 +90,7 @@ namespace FunnyMacros.Macros
             helper      = Helper.Initialize(solidWorks.IGetMathUtility());
             corpus      = new Locator(solidWorks.IGetMathUtility());
             shaft       = new Locator(solidWorks.IGetMathUtility());
-            planeLocator        = new Locator(solidWorks.IGetMathUtility());
+            planeLocator     = new Locator(solidWorks.IGetMathUtility());
             prismLocator1    = new Locator(solidWorks.IGetMathUtility());
             prismLocator2    = new Locator(solidWorks.IGetMathUtility());
 
@@ -213,7 +213,7 @@ namespace FunnyMacros.Macros
             AlignWithPlane(planeLocator.Component, horizont);
             AlignWithPlane(prismLocator1.Component, horizont);
             AlignWithPlane(prismLocator2.Component, horizont);
-            Debug.WriteLine("align with horizont ... done!");
+            Debug.WriteLine("align with horizont ... done!");            
         }
 
         private void AddMate()
@@ -293,6 +293,8 @@ namespace FunnyMacros.Macros
             mounter.AddMate(topFaceOfCorpus, planeLocator.BottomFace, (int)swMateType_e.swMateCOINCIDENT, (int)swMateAlign_e.swAlignAGAINST);
             Debug.WriteLine("mate with corpus of not dangling locator ... done!");
 
+            Rebuild();
+
             double delta = 0;
             double value = 0;
 
@@ -303,6 +305,8 @@ namespace FunnyMacros.Macros
             value = delta + Convert.ToDouble(danglingLocator.GetParameter(configuration[Property.PARAMETER_CYLINDER_LOCATOR_HEIGHT]));
             danglingLocator.SetParameter(configuration[Property.PARAMETER_CYLINDER_LOCATOR_HEIGHT], Convert.ToInt32(value).ToString());
             Debug.WriteLine("extension of the dangling locator, delta: {0}mm, value: {1} ... done!", delta, Convert.ToInt32(value));
+
+            Rebuild();
 
             delta = Math.Abs(1000.0 * (planeBase.FaceGBox.Ymax - planeLocator.LBox.Ymax));
             value = Convert.ToDouble(planeLocator.GetParameter(configuration[Property.PARAMETER_PLANE_LOCATOR_HEIGHT])) + delta;
@@ -401,3 +405,27 @@ namespace FunnyMacros.Macros
         }
     }
 }
+/*
+            Box prismBox = boundingBox;
+            Box shaftBox = corpus.LBox;
+
+            Drawer.Bounding(document, prismBox.CoordinatesCorners);
+            Drawer.Bounding(document, shaftBox.CoordinatesCorners);
+
+            double[] centerPrism =
+            {
+                (prismBox.Xmin + prismBox.Xmax) / 2,
+                (prismBox.Ymin + prismBox.Ymax) / 2,
+                (prismBox.Zmin + prismBox.Zmax) / 2
+            };
+
+            double[] centerShaft =
+            {
+                (shaftBox.Xmin + shaftBox.Xmax) / 2,
+                (shaftBox.Ymin + shaftBox.Ymax) / 2,
+                (shaftBox.Zmin + shaftBox.Zmax) / 2
+            };
+
+            Drawer.DrawPoint(document, centerPrism[0], centerPrism[1], centerPrism[2]);
+            Drawer.DrawPoint(document, centerShaft[0], centerShaft[1], centerShaft[2]);
+*/
